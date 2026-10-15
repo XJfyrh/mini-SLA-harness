@@ -12,7 +12,6 @@ TaskSpec、权威 StateStore、不可变候选快照、独立可信评估、预�
 
 ## 设计来源
 
-2026-10-15 已读取以下 v0.2 Page 正文；未使用旧版附件替代当前设计：
+完整正文与阅读路径见 [本地设计索引](design/README.md)。正式设计和独立探索材料分开保存，其他 agent 无需 Pages 权限即可读取本地正文。
 
-- [设计总览](https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870)，版本日期 2026-10-11。
-- [实施与验收设计](https://chatgpt.com/space/page_02ab1ff0cbe08191832190d785c66f5c)，版本日期 2026-10-11，列出 M0～M4 的待实施验收。
+来源读取时点、原 Page、导入基线与后续同步维护约定由设计索引和 [来源记录](design/sources.json) 负责。
