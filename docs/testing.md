@@ -1,6 +1,6 @@
 # 测试与仓库检查
 
-运行入口见 [README](../README.md)，完整顺序以 [dev.py](../scripts/dev.py) 为准。当前测试验证离线开发基础设施；协议验收范围见 [设计范围](scope.md)。
+贡献者运行入口见 [开发指南](development.md)，完整顺序以 [dev.py](../scripts/dev.py) 为准。当前测试验证离线开发基础设施；协议验收范围见 [设计范围](scope.md)。
 
 ## 行为测试
 
@@ -16,6 +16,18 @@
 2. pyproject 的 `mini-sla` 入口必须指向 src 中可解析的 Python 模块和顶层函数定义。它检查声明与实际文件/AST 的关系；运行行为由 CLI 测试验证。
 
 [test_repo_check.py](../tests/test_repo_check.py) 在独立 fixture 中实际破坏链接、删除入口文件、修改 TOML 或重命名入口函数。命令级负例检查非零退出，修复后恢复成功。检查不设中文词数预算。
+
+## 安装制品验收
+
+[package_check.py](../scripts/package_check.py) 使用已有 pip/setuptools 构建 wheel，不新增构建管理器依赖。运行时只有标准库，干净安装可以直接暴露遗漏文件或开发环境依赖。
+
+验收在项目 `artifacts/tmp` 下创建全新 venv，只安装本次 wheel，不安装 editable 包或开发工具。实际 CLI 从独立的临时工作目录启动；子进程只保留操作系统与临时目录所需环境，禁用用户 site 和路径注入。工作目录放置同名干扰模块，另用隔离 Python 进程核实导入路径位于临时环境内。
+
+首次 CLI 退出后，父进程直接打开 SQLite，核对三条 fixture 的全部字段、WAL 与完整性，并对照 JSON 实际内容。第二次 CLI 重启不得增加记录或改变 JSON 字节；第三个只读进程从已安装包重新读取数据库。这里验证的是 demo 跨进程持久化，不是正式恢复协议。
+
+错误路径要求未知命令退出 2、输出目标为已有文件和数据库冲突退出 1。已有文件、冲突数据与上一次 JSON 必须保持原样。每个子进程有 60 秒上限，任一步异常均失败；临时环境在退出时清理。
+
+成功 wheel 留在 `dist/`；逐命令日志、SQLite 实际行值、导入位置和 wheel SHA-256 写入 `artifacts/package-check/summary.json`，正常 demo JSON 另存为 `demo-result.json`。这些路径是本地生成物，不作为文档本地链接。当前验证平台由 [验证记录](verification.md) 负责。
 
 ## 工程参考
 

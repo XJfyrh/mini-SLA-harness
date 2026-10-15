@@ -1,6 +1,32 @@
-# 开发环境与依赖
+# 开发指南
 
-日常运行命令由 [README](../README.md) 负责；检查方法由 [测试说明](testing.md) 负责。
+面向参与开发的人和 agent。首次体验看 [README](../README.md)，实现边界看 [架构](architecture.md)，验证方法看 [测试说明](testing.md)。
+
+## 日常开发
+
+在仓库根目录执行；修改后运行完整 check 和 demo：
+
+```powershell
+python scripts/dev.py bootstrap
+python scripts/dev.py check
+python scripts/dev.py demo
+```
+
+check 包含格式、lint、严格类型、仓库规则、全部 unittest、依赖一致性和 wheel 安装验收，任何一步失败都会返回非零退出码。单独重跑制品验收：
+
+```powershell
+python scripts/dev.py package-check
+```
+
+成功 wheel 留在 `dist/`；验收内容和证据格式由测试说明负责。Windows 直接使用 CLI 可运行：
+
+```powershell
+.\.venv\Scripts\mini-sla.exe --help
+.\.venv\Scripts\mini-sla.exe --version
+.\.venv\Scripts\mini-sla.exe demo --output-dir artifacts/another-demo --json
+```
+
+`--json` 使 stdout 只包含 JSON。macOS/Linux 使用同一开发入口，直接 CLI 路径为 `.venv/bin/mini-sla`；若系统命令叫 `python3`，替换入口中的 `python`。实际测试平台见验证记录。
 
 ## 安装机制
 

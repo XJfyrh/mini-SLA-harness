@@ -66,6 +66,10 @@ def bootstrap() -> None:
     run([str(PYTHON), "-m", "pip", "--isolated", "check"])
 
 
+def package_check() -> None:
+    run([str(PYTHON), "scripts/package_check.py"])
+
+
 def check() -> None:
     run([str(PYTHON), "-m", "ruff", "format", "--check", "."])
     run([str(PYTHON), "-m", "ruff", "check", "."])
@@ -73,11 +77,12 @@ def check() -> None:
     run([str(PYTHON), "scripts/repo_check.py"])
     run([str(PYTHON), "-m", "unittest", "discover", "-s", "tests", "-v"])
     run([str(PYTHON), "-m", "pip", "--isolated", "check"])
+    package_check()
 
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=["bootstrap", "check", "demo"])
+    parser.add_argument("command", choices=["bootstrap", "check", "demo", "package-check"])
     args = parser.parse_args()
     try:
         temp_root = ROOT / "artifacts" / "tmp"
@@ -92,6 +97,8 @@ def main() -> int:
                 raise RuntimeError("Run: python scripts/dev.py bootstrap")
             if args.command == "check":
                 check()
+            elif args.command == "package-check":
+                package_check()
             else:
                 run([str(PYTHON), "-m", "mini_sla_harness", "demo"])
     except subprocess.CalledProcessError as error:
