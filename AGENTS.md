@@ -1,6 +1,6 @@
 # 工作入口
 
-- 先读 [README.md](README.md)，按需阅读 `docs/`。当前是开发骨架，完整 Harness 与 M0 协议待实现。
+- 先读 [README.md](README.md)；模块与设计见 [scope](docs/scope.md)，依赖维护见 [development](docs/development.md)。当前是开发骨架，M0 协议待实现。
 - 环境：`python scripts/dev.py bootstrap`；验证：`python scripts/dev.py check`；演示：`python scripts/dev.py demo`。
 - 代码位于 `src/mini_sla_harness/`，离线测试位于 `tests/`，开发入口位于 `scripts/dev.py`。
 - 保持标准库优先；开发依赖锁在 `requirements-dev.lock`，运行产物写入忽略的 `artifacts/`。
