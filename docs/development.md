@@ -42,6 +42,18 @@ python scripts/dev.py package-check
 
 交付说明写明改动、实际执行的命令、证据路径和剩余失败。未运行的检查标为未运行；设计预期写在验收条件中。验证期间源码变化会使本次结果失败，需在稳定工作区重跑。
 
+## 项目技能包
+
+[Mini-SLA 技能入口](../.agents/skills/mini-sla/SKILL.md) 连接六条独立短原则。技能源文件位于 `.agents/skills/`，随代码一起提交；Codex 会从仓库目录发现这些技能，见 [官方说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。其他支持读取 Markdown 的 agent 可从 AGENTS.md 中的入口加载。
+
+可以用 `$mini-sla 修复这个问题` 开始任务，也可以用“尽早暴露错误”“取得真实反馈”等原则名提示 agent 调整具体决策。每条原则的 description 负责触发条件，正文负责执行方法；项目入口按任务选择所需原则。
+
+迭代时，从一次实际失误或重复需求出发，修订能改变决策的最小规则。可机械检查的约束优先放进现有检查入口；需要判断的部分保留短原则。命令、架构和协议事实仍由负责该主题的文档维护，技能链接到这些文档。
+
+修改技能后检查触发条件、名称和引用；新增技能使用项目 Python 加 `-X utf8` 运行 `skill-creator` 的 `quick_validate.py` 验证 frontmatter，再按本指南执行完整 check 和 demo。check 使用锁定的 PyYAML 解析技能元数据，检查入口、名称、description、正文及本地链接。对影响决策的修改，用对应真实任务观察实际动作和产物，记录失败后修订；格式通过和行为有效分别验证。
+
+结构参考 [pstack 的短原则索引](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/docs/guide/08-principles.md)。本包将 [根因定位](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-fix-root-causes/SKILL.md)、[行为测试](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-test-behavior-not-implementation/SKILL.md)、[小步验证](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-sequence-verifiable-units/SKILL.md) 和 [结构化约束](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-encode-lessons-in-structure/SKILL.md) 接到本项目的工作流程；两条核心原则采用“尽早暴露错误”和“取得真实反馈”。
+
 ## 尽早检查环境
 
 ```powershell

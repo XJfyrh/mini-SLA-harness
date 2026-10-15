@@ -8,14 +8,15 @@
 
 测试各自拥有临时目录，关闭数据库连接并等待子进程退出后清理。超时、未预期退出或内容不一致均失败，不因环境问题自动跳过。真实模型、研究效果和其他操作系统尚未在这些测试中验证。
 
-## 两类仓库规则
+## 仓库规则
 
 [repo_check.py](../scripts/repo_check.py) 纳入完整 check，仅执行当前有用的规则：
 
-1. 根 README 和 AGENTS 存在；它们及 docs 中的本地 Markdown 内联链接必须指向仓库内存在的目标。识别普通与尖括号目标、百分号编码，忽略代码块和行内代码。外部 URL 不联网查询；片段锚点不校验。引用式链接和 HTML 链接不在当前解析范围。
+1. 根 README 和 AGENTS 存在；它们、docs 及 `.agents/skills/` 中的本地 Markdown 内联链接必须指向仓库内存在的目标。识别普通与尖括号目标、百分号编码，忽略代码块和行内代码。外部 URL 不联网查询；片段锚点不校验。引用式链接和 HTML 链接不在当前解析范围。
 2. pyproject 的 `mini-sla` 入口必须指向 src 中可解析的 Python 模块和顶层函数定义。它检查声明与实际文件/AST 的关系；运行行为由 CLI 测试验证。
+3. `.agents/skills/` 下每个技能目录必须有 `SKILL.md`；YAML 元数据可解析，名称与目录一致且符合命名规则，description 为非空文本，正文存在。
 
-[test_repo_check.py](../tests/test_repo_check.py) 在独立 fixture 中实际破坏链接、删除入口文件、修改 TOML 或重命名入口函数。命令级负例检查非零退出，修复后恢复成功。检查不设中文词数预算。
+[test_repo_check.py](../tests/test_repo_check.py) 在独立 fixture 中实际破坏链接、删除入口文件、修改 TOML 或重命名入口函数。技能检查覆盖相邻技能引用、参考文档及元数据；删除被引用技能或损坏 YAML 后命令非零退出，恢复后通过。
 
 ## 安装制品验收
 

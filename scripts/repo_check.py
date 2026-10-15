@@ -8,13 +8,20 @@ import tomllib
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
+import yaml  # type: ignore[import-untyped]
+
 ROOT = Path(__file__).resolve().parents[1]
 LINK = re.compile(r'!?\[[^\]\n]*\]\((<[^>\n]+>|[^)\s]+)(?:\s+"[^"\n]*")?\)')
 
 
 def local_link_errors(root: Path) -> list[str]:
     errors = []
-    documents = [root / "README.md", root / "AGENTS.md", *sorted((root / "docs").rglob("*.md"))]
+    documents = [
+        root / "README.md",
+        root / "AGENTS.md",
+        *sorted((root / "docs").rglob("*.md")),
+        *sorted((root / ".agents" / "skills").rglob("*.md")),
+    ]
     for document in documents:
         if not document.is_file():
             errors.append(f"Missing document: {document.relative_to(root)}")
@@ -67,9 +74,47 @@ def entry_point_errors(root: Path) -> list[str]:
     return []
 
 
+def skill_errors(root: Path) -> list[str]:
+    directory = root / ".agents" / "skills"
+    errors: list[str] = []
+    if not directory.is_dir():
+        return errors
+    for folder in sorted(path for path in directory.iterdir() if path.is_dir()):
+        path = folder / "SKILL.md"
+        location = str(path.relative_to(root))
+        if not path.is_file():
+            errors.append(f"{location}: skill entry is missing")
+            continue
+        content = path.read_text(encoding="utf-8")
+        frontmatter, separator, body = content.removeprefix("---\n").partition("\n---\n")
+        if not content.startswith("---\n") or not separator or not body.strip():
+            errors.append(f"{location}: expected YAML frontmatter and nonempty instructions")
+            continue
+        try:
+            metadata: object = yaml.safe_load(frontmatter)
+        except yaml.YAMLError as error:
+            errors.append(f"{location}: invalid skill YAML: {error}")
+            continue
+        if not isinstance(metadata, dict):
+            errors.append(f"{location}: skill metadata must be a mapping")
+            continue
+        name = metadata.get("name")
+        description = metadata.get("description")
+        if (
+            not isinstance(name, str)
+            or not re.fullmatch(r"[a-z0-9]+(?:-[a-z0-9]+)*", name)
+            or len(name) > 64
+            or name != folder.name
+        ):
+            errors.append(f"{location}: name must match its lowercase hyphenated folder name")
+        if not isinstance(description, str) or not 1 <= len(description.strip()) <= 1024:
+            errors.append(f"{location}: description must be nonempty text, at most 1024 characters")
+    return errors
+
+
 def check_repository(root: Path) -> list[str]:
     root = root.resolve()
-    return local_link_errors(root) + entry_point_errors(root)
+    return local_link_errors(root) + entry_point_errors(root) + skill_errors(root)
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -84,7 +129,9 @@ def main(argv: list[str] | None = None) -> int:
         for issue in errors:
             print(f"error: {issue}", file=sys.stderr)
         return 1
-    print("Repository checks passed: local documentation targets and mini-sla entry")
+    print(
+        "Repository checks passed: local documentation targets, mini-sla entry and project skills"
+    )
     return 0
 
 
