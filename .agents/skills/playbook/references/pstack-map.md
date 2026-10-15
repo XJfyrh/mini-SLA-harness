@@ -2,7 +2,7 @@
 
 维护原则或追溯来源时使用本表。来源固定到 pstack 提交 `e5136d82418d2db3165ea1050d17577cd618cc05` 的 [24 条原则索引](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/docs/guide/08-principles.md)。作战手册按触发条件合并相近规则，使用通用软件开发表述；具体契约和验证入口由使用手册的仓库提供。
 
-“尽早暴露错误”和“取得真实反馈”由用户明确提出，作为常驻原则；后者也吸收 Prove It Works。其余原则由五类路由按需选择。
+三条核心原则见 [作战手册入口](../SKILL.md)；“取得真实反馈”也吸收 Prove It Works。下表记录 pstack 的对应关系。
 
 | pstack 原则 | 手册原则 | 吸收与调整 |
 | --- | --- | --- |
