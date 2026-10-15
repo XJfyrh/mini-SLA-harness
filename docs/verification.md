@@ -1,58 +1,36 @@
 # 实际验证记录
 
-执行日期：2026-10-15。平台：用户本地 Windows x64，Python 3.14.7，SQLite 3.50.4。
-仓库：`E:\dev\mini-SLA-harness`。
-分支：`chore/initial-dev-environment`。
+2026-10-15，在 `E:\dev\mini-SLA-harness` 的 `chore/repo-verification` 分支执行。平台为 Windows x64、Python 3.14.7、SQLite 3.50.4。
 
-## 验证结果
+## 本轮结果
 
-| 操作 | 实际结果 |
+| 验证对象 | 实际结果 |
 | --- | --- |
-| 项目 `.venv` | `sys.prefix` 等于项目 `.venv`，与 `sys.base_prefix` 不同 |
-| `python scripts/dev.py bootstrap` | 退出 0；锁定工具与 editable 包安装成功；`pip check` 通过 |
-| 锁文件发行包下载 | 11 个 wheel 按 SHA-256 校验成功，留在忽略的 `artifacts/wheelhouse/` |
-| 锁文件离线安装 | 在目标新建的 `.venv` 中使用 wheelhouse、`--require-hashes --no-deps` 实际安装；pip 由 ensurepip 提供锁定版本 |
-| `python scripts/dev.py check` | Ruff format、Ruff lint、Mypy strict、11 项 unittest、pip check 全部通过 |
-| `python scripts/dev.py demo` | 退出 0；3 条固定响应，SQLite 新连接回读一致，JSON 已生成 |
-| `mini-sla --help` / `--version` | 退出 0；已安装 CLI 可用，版本 `0.0.1` |
-| JSON 与重复运行 | 独立 CLI 进程 stdout 可解析并与文件一致；同目录重复/新目录运行 JSON 逐字节一致 |
-| Windows 路径与清理 | 含中文、空格、`#` 的 SQLite/CLI 输出路径测试通过，连接可关闭并清理 |
+| 项目环境 bootstrap | 锁定依赖、editable 安装和 pip check 成功 |
+| 格式 / lint / 严格类型 | Ruff format、Ruff check、Mypy strict 全部通过 |
+| 仓库规则 | 本地文档链接与 CLI 声明/AST 解析通过 |
+| 全部 unittest | 20 项通过：原有 11 项行为测试，新增 9 项仓库检查测试 |
+| 规则负例 | 删除导航文件、断链、越出仓库、缺失声明/模块/函数、畸形 TOML/Python 均被拒绝；命令失败后修复可恢复成功 |
+| wheel 构建与安装 | 构建普通 wheel，在项目内全新 venv 仅安装本次 wheel；未复用 editable 环境 |
+| 真正安装的 CLI | 从独立临时工作目录执行，版本/帮助/demo 退出 0；导入文件位于临时 site-packages，未导入 src |
+| SQLite 与重启 | 外部读取 3 条完整 fixture、WAL 与完整性；第二次 CLI 不重复写入，第三个只读进程读回一致 |
+| JSON | 实际内容与已知 fixture 一致，重启运行逐字节相同 |
+| 安装后失败边界 | 未知命令退出 2；已有文件目标、数据库冲突退出 1；既有文件/行值/上次 JSON 保持原样 |
+| 资源清理 | 安装验收创建的临时环境与工作目录已清理 |
 
-最后一次在最终提交上的复验记录位于本地 `artifacts/verification/summary.json`，
-包含实际 HEAD、分支、解释器、锁文件与 demo JSON 的 SHA-256、每条命令退出码、
-数据库行数/WAL 和工作区状态。对应 `bootstrap.log`、`check.log`、`demo.log`、
-`cli-version.log`、`cli-help.log`、`cli-json.log` 及 `locked-install.log` 均在同目录。
-运行产物和复验日志被忽略，源码与指引已提交。
+完整 check 已包含 wheel 验收；运行命令见 [开发指南](development.md)，方法与解析范围见 [测试说明](testing.md)。
 
-demo 摘要：
+## 可检查的交付证据
 
-```text
-Offline smoke demo: ok (3 cases)
-Provider: deterministic-fake-v1
-SQLite round-trip: passed
-Research effect: not evaluated
-```
+- `dist/mini_sla_harness-0.0.1-py3-none-any.whl`：最后一次成功验收构建的 wheel。
+- `artifacts/package-check/summary.json`：wheel SHA-256、真实导入位置、工作目录、实际数据库行值、错误退出和清理结果；同目录含逐命令日志与正常 `demo-result.json`。
+- `artifacts/verification/summary.json`：最终 HEAD、分支、各入口退出码、实际测试数量、制品证据与工作区状态。
+- `artifacts/verification/check.log`、`bootstrap.log`、`demo.log`：最终提交上的完整运行日志。
 
-## 执行中修复的问题
+这些是本地生成物，不进入 Git。临时环境路径保留在证据中用于审计，验收结束后路径本身已不存在。
 
-- 默认沙箱临时目录不能完成 pip 写入；开发入口将临时文件改到项目 `artifacts/tmp`，随后安装成功。
-- 第一轮 Windows 清理测试发现测试连接未关闭；改用显式关闭后，11 项测试全部通过。
-- 官方 PyPI 查询有过 DNS/TLS 超时；经执行环境允许的网络访问完成下载，未关闭证书校验。
-- 原目录执行时的工具日志中 Python 启动可见 `Failed to find real location of C:\Python314\python.exe`；
-  实际解释器、虚拟环境隔离与上述命令退出码均已检查，最终验证通过。
+## 验证边界
 
-## 交付边界
+本轮使用确定性 fake、真实 SQLite 与实际安装制品，没有真实模型调用或研究效果测量。当前结果证明开发与安装链路，协议范围由 [设计范围](scope.md) 负责。其他操作系统尚未实机验证，链接检查不验证外部站点与标题锚点。
 
-这是开发骨架验收。TaskSpec、正式 StateStore、候选快照、独立评估、预算、fencing、
-恢复、Advisor、Workers 与研究实验仍待实现；设计 M0 Gate 未验收。
-没有读取模型凭据、调用真实 API、创建远端、推送、部署或发布。现有用户文件未改动。
-
-## 迁移记录
-
-2026-10-15 按用户指定迁移到 `E:\dev\mini-SLA-harness`。目标目录已存在且为空，经执行环境标准审批允许写入后操作。
-
-Git 历史保留 `834c1eb`、`94bb44b`、`6885438`，沿用原开发分支，目标仓库无远端。源码通过不共享硬链接的本地 clone 复制。
-
-源虚拟环境未复制；在目标重新创建 `.venv`，使用已校验的 wheelhouse 按锁文件安装，随后在目标实际运行 bootstrap、check 和 demo。最终 HEAD 及新位置验证结果以本目录所述 `artifacts/verification/summary.json` 为准。
-
-原目录 `C:\Users\12898\Documents\Codex\2026-10-15\task-2\mini-sla-harness` 保留为迁移备份。后续开发入口为 E 盘目录。
+初始化和迁移历史保留在 `5de972d` 及其父提交；本轮在其基础上创建独立分支。原目录仍保留迁移备份，后续入口使用 E 盘仓库。
