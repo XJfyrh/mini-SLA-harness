@@ -1,7 +1,7 @@
 # 常驻开发规则
 
 - 从 [README](README.md) 进入；按任务阅读 [当前架构](docs/architecture.md)、[测试](docs/testing.md) 或 [依赖维护](docs/development.md)，不复制其细节。
-- 本项目的开发、修复、审查和设计调整使用 [Mini-SLA 技能入口](.agents/skills/mini-sla/SKILL.md)，先读两条核心原则，再按任务分类与触发条件选择短原则。
+- 本项目的开发、修复、审查和设计调整使用 [作战手册](.agents/skills/playbook/SKILL.md)，先读两条核心原则，再按任务分类与触发条件选择短原则。
 - 涉及协议设计时，从 [设计索引](docs/design/README.md) 按任务阅读正式正文；[设计范围](docs/scope.md) 记录实现进度。真实集成按 [实施与验收](docs/design/04-implementation-validation.md) 的探索条件尽早验证；fake 用于可重复的协议与故障测试。
 - 保留用户文件与修改。使用独立分支、阶段提交，提交消息用简体中文 Conventional Commits；未获授权不执行远端操作。
 - 标准库优先；第三方工具纳入 `requirements-dev.lock`。生成物进入忽略的 `artifacts/` 或 `dist/`。

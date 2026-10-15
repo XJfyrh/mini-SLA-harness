@@ -42,11 +42,22 @@ python scripts/dev.py package-check
 
 交付说明写明改动、实际执行的命令、证据路径和剩余失败。未运行的检查标为未运行；设计预期写在验收条件中。验证期间源码变化会使本次结果失败，需在稳定工作区重跑。
 
-## 项目技能包
+## 作战手册
 
-[Mini-SLA 技能入口](../.agents/skills/mini-sla/SKILL.md) 连接 19 条独立短原则：两条常驻，其余按目标与方案、模型与边界、实现与迁移、诊断与验证、协作与维护五类路由。技能源文件位于 `.agents/skills/`，随代码一起提交；Codex 会从仓库目录发现这些技能，见 [官方说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。其他支持读取 Markdown 的 agent 可从 AGENTS.md 中的入口加载。
+[作战手册](../.agents/skills/playbook/SKILL.md) 连接 19 条独立短原则：两条常驻，其余按目标与方案、模型与边界、实现与迁移、诊断与验证、协作与维护五类路由。技能源文件位于 `.agents/skills/`，随代码一起提交；Codex 会从仓库目录发现这些技能，见 [官方说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。其他支持读取 Markdown 的 agent 可从 AGENTS.md 中的入口加载。
 
-可以用 `$mini-sla 修复这个问题` 开始任务，也可以点名“先隔离共享状态”“解释测量结果”等原则。入口先匹配分类，再从分类表选择当前决策需要的原则；跨类任务按依赖顺序读取，遇到新问题重新路由。每条原则的 description 负责触发条件，正文负责执行方法。
+入口标识为 `playbook`，界面名称为“作战手册”；独立原则使用 `principle-*` 标识。手册维护通用开发方法，本仓库通过 AGENTS.md 接入以下具体约定：
+
+| 需要落实的内容 | 项目入口 |
+| --- | --- |
+| 运行路径、当前模块职责 | [当前架构](architecture.md) |
+| 状态、计量、隔离与恢复契约 | [设计索引](design/README.md)、[状态协议](design/03-state-transactions.md) |
+| 环境与真实集成探针、性能校准 | 本页的环境检查、[实施与验收](design/04-implementation-validation.md) |
+| 修改后的验证与证据 | 本页的 check 和 demo、[测试说明](testing.md) |
+
+迁移到其他仓库时，一起复制 `playbook` 和 `principle-*` 目录，在目标仓库的 AGENTS.md 中连接手册入口及自己的开发约定。
+
+可以用 `$playbook 修复这个问题` 开始任务，也可以点名“先隔离共享状态”“解释测量结果”等原则。入口先匹配分类，再从分类表选择当前决策需要的原则；跨类任务按依赖顺序读取，遇到新问题重新路由。每条原则的 description 负责触发条件，正文负责执行方法。
 
 例如，排查恢复后重复结算，先读“修复根因”，再按观察进入“让重复执行收敛”和相关事务边界；比较性能收益时进入“解释测量结果”；只修改文档措辞时使用“降低阅读成本”。这些任务都先读两条核心原则。
 
@@ -54,7 +65,7 @@ python scripts/dev.py package-check
 
 修改技能后检查触发条件、名称和引用；新增技能使用项目 Python 加 `-X utf8` 运行 `skill-creator` 的 `quick_validate.py` 验证 frontmatter，再按本指南执行完整 check 和 demo。check 使用锁定的 PyYAML 解析技能元数据，检查入口、名称、description、正文及本地链接。对影响决策的修改，用对应真实任务观察实际动作和产物，记录失败后修订；格式通过和行为有效分别验证。
 
-上游来源、合并关系与项目调整见 [pstack 吸收映射](../.agents/skills/mini-sla/references/pstack-map.md)。
+上游来源、合并关系与调整见 [pstack 吸收映射](../.agents/skills/playbook/references/pstack-map.md)。
 
 ## 尽早检查环境
 

@@ -25,7 +25,7 @@ python scripts/dev.py demo
 | --- | --- |
 | 数据怎样流动、代码各自负责什么 | [当前架构](docs/architecture.md) |
 | 参与开发、运行完整验证或排查环境 | [开发指南](docs/development.md) |
-| 使用项目技能与短原则指导 agent | [Mini-SLA 技能入口](.agents/skills/mini-sla/SKILL.md) |
+| 使用作战手册与短原则指导 agent | [作战手册](.agents/skills/playbook/SKILL.md) |
 | 验证方法与实际运行结果 | [测试说明](docs/testing.md)、[验证记录](docs/verification.md) |
 | 阅读需求、规划架构与实施设计 | [设计文档](docs/design/README.md) |
 | 确认当前边界与后续范围 | [设计范围](docs/scope.md) |
