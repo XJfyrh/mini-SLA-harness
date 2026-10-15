@@ -1,0 +1,1178 @@
+{
+  "snapshot_schema": 1,
+  "imported_at_utc": "2026-10-15T06:05:42Z",
+  "mode": "complete_page_markdown",
+  "synchronization": "manual_snapshot_not_bidirectional",
+  "pages": [
+    {
+      "page_id": "page_4df769bdb30c8191aa5ecd611fdd1870",
+      "file": "00-overview.md",
+      "title": "mini SLA harness 设计文档",
+      "source_url": "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870",
+      "source_updated_at": "2026-10-12T10:17:45.217191Z",
+      "source_sequence": 4,
+      "block_count": 24,
+      "kind": "formal_design_target",
+      "source_characters": 2319,
+      "source_utf8_bytes": 3670,
+      "source_markdown_sha256": "32a3e474e48276ba42482bb52662ac224a2a2f5e80e3c0ca9faa175fe68fe972",
+      "imported_body_sha256": "5561522d6407954e8f8502e763e80739962d33ef92c3862e8c620d6cb620ea3f",
+      "fenced_code_blocks": 0,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_3e7e4a9aa9c8819195c8e21e75f6073d": 1,
+        "https://chatgpt.com/space/page_466c7cc880848191868fee59d5e652f0": 1,
+        "https://chatgpt.com/space/page_e0f7726dd0308191ba3c3fe229dc6efa": 1,
+        "https://chatgpt.com/space/page_02ab1ff0cbe08191832190d785c66f5c": 1,
+        "https://chatgpt.com/space/page_6dfa06bd527c8191b010802445f7170e": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "7168e19e-47e2-48f1-b324-f5fa84ee06e4",
+          "hash": "196f9fb779c631961283e137dfd8148c79f1abfc79bc99e9a132e80b277137f3"
+        },
+        {
+          "id": "50a090f6-5655-4bc9-9d31-deb1d6c48819",
+          "hash": "ab2f718cc8e738b71fa5e1d3ec3f715b7f4b5eb821c837e4c85d88e088958faa"
+        },
+        {
+          "id": "6dd48d60-230e-4db0-ab81-e4e1ee25c25b",
+          "hash": "f62f167c96f1c013486042fc428e6068183feffc64d2864fdfce340801898576"
+        },
+        {
+          "id": "3c15b814-a092-4fe9-94f8-11c32d01b87b",
+          "hash": "cadc66003eaadc7fdabb7c83e3b12cade8c5154af87ec6648fb501632a7565de"
+        },
+        {
+          "id": "51a763a6-987a-4281-ac56-6c2b0da10212",
+          "hash": "46a476c945bb39b8db5ead57ec6898fa3a9cc765d643ada8055cb1832879370d"
+        },
+        {
+          "id": "7c53d61d-343c-4e1b-98ac-acfb39b3d565",
+          "hash": "501e22daf511e8ad88dfa3237acc765a6fa1a72b2f9e005810e99b45970ab4bb"
+        },
+        {
+          "id": "c5110f92-00dc-41d9-8f85-4c1439f94966",
+          "hash": "30b04e01aae0388eecb975c31a18d1dc7baea71a28a07b55d7a8a775ecca2d63"
+        },
+        {
+          "id": "068163fb-e28e-4f18-8035-2e2f0252ef97",
+          "hash": "953509ef2fbe13387d7d145e532a1ebea2edd3bbc580df16115553f637307a39"
+        },
+        {
+          "id": "9d08ba06-ec15-4bdf-a913-c85494476af5",
+          "hash": "24416e6864eacf33c1620272769e3d9d24832c43b802b159d2113baaba07c1a2"
+        },
+        {
+          "id": "788dc27f-b0fb-41ca-8426-babe7bcd0e20",
+          "hash": "c606286a4231d0fba450be2814807eab4b77b91c0f616dff8ba940662f152385"
+        },
+        {
+          "id": "191e1ed6-e36c-4dc3-881f-4570cb645bdd",
+          "hash": "354953d9899308221eed690f6c38a941a69ed9027279f4123f62ebe69f12e407"
+        },
+        {
+          "id": "cf9e3e4a-fbcf-476b-8dda-e613f241a9bc",
+          "hash": "1568ff80e6ee55fd6fb5a63c691500742b2918fe59de9744c1137833367b9c36"
+        },
+        {
+          "id": "a99603d7-98ee-46eb-9d79-7a7c413396f4",
+          "hash": "18bf5d14db28f04603e1f582686f067e5f9ca2209bcd5b6cf030b39f461381a7"
+        },
+        {
+          "id": "73589d65-f744-4264-bcf7-6c9547ac9e95",
+          "hash": "8067f44da53781ee3f70ce798ad2ac7bce8c6005c2c7acdf16b55c06166dadea"
+        },
+        {
+          "id": "81b1c11f-dd28-4a20-8eed-14db01b1e7c5",
+          "hash": "6f633870907dea5d7f882e61cc7c034b91839377b6786b1af0b5c8f94bc85ad3"
+        },
+        {
+          "id": "f9744640-af67-4346-9204-e82bf77bf2cd",
+          "hash": "2ccc733be3208e41bd15a0980b11be8390fbafc399490a04fb54cc8ba10b5c28"
+        },
+        {
+          "id": "17aef615-9787-4f09-966f-88c4a1699281",
+          "hash": "120d8cb5445da1c658925313f6ed4890069632e2b56f91c6a6b8ba0384de6896"
+        },
+        {
+          "id": "02b58d2b-1c6c-40cc-b1bf-05b3f0d4077e",
+          "hash": "2298cdf7b2adafcf757c4a2637a51fdf6c7fee52fb14b7c19c6ddf07a973805d"
+        },
+        {
+          "id": "62a31e9c-8d5f-4e78-90cd-46bbbc9ccca5",
+          "hash": "109153379b3186478a8db26daf936bbaf72165464e5ba162a9460ab562ba40c3"
+        },
+        {
+          "id": "0eda0630-779c-4f31-829c-11ed576d4b03",
+          "hash": "fb08af4981d4fb6ee9156428ca4757de50c990a69bf17eeb73e3c4cb6eaa248f"
+        },
+        {
+          "id": "a08e0907-b050-45d3-8025-205dd5b85438",
+          "hash": "fbe9ae97934366151228ceeebace80db307b4bf49445a5774bd02b734c9d37fd"
+        },
+        {
+          "id": "44c19e65-b81d-477a-aa3b-8adfd65b7d69",
+          "hash": "387c17369097f68a13b1ff7c95e1dcce059f60a3ac3038fd02ffedfe8727d70a"
+        },
+        {
+          "id": "b6008032-b95d-4520-83ff-02efae6e088b",
+          "hash": "f5f0e253ce21a303854e45dfc339a452795bb573ee1008e7882661d0d480404c"
+        },
+        {
+          "id": "c567ba1c-15e2-4b47-a5e3-4a9b734f71e5",
+          "hash": "ea3fd33d8bac19d09cda4d8a70dacdc6f08ea6b4831b5602a453665f80fefb64"
+        }
+      ]
+    },
+    {
+      "page_id": "page_3e7e4a9aa9c8819195c8e21e75f6073d",
+      "file": "01-requirements.md",
+      "title": "mini SLA harness 产品需求设计",
+      "source_url": "https://chatgpt.com/space/page_3e7e4a9aa9c8819195c8e21e75f6073d",
+      "source_updated_at": "2026-10-11T09:04:16.713453Z",
+      "source_sequence": 2,
+      "block_count": 46,
+      "kind": "formal_design_target",
+      "source_characters": 8546,
+      "source_utf8_bytes": 17212,
+      "source_markdown_sha256": "0e7b5fb797a6fb247fb6d48cdad58bbfdfc9ceb127049423cbfa1f315d4ed194",
+      "imported_body_sha256": "4ec2b8bd7232f5977750c3a4a9802aaf240f3ae4505a14f1ff11ce35bd696c5b",
+      "fenced_code_blocks": 2,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "d52e417a-426a-42ce-83a6-2a0f18a8077e",
+          "hash": "8a256069881a03339dfb58b8bcdfceb6deea489b55f6c5c419ef214fec2b0a44"
+        },
+        {
+          "id": "daa05eb7-6ac2-4b5c-a628-38f2e9e5c6dc",
+          "hash": "4b6686c44a93be47955f511dcf6d6d587dd3c9939c6d1fe1193b5fd126bae219"
+        },
+        {
+          "id": "ef78cfce-dc07-415d-8b5e-9f5e98444951",
+          "hash": "038e3ccb2d071a7a6bf4ecb8bfdb70c7d8e37f378bddcd10a74f590901724c22"
+        },
+        {
+          "id": "4a54b9f0-a220-4634-b77e-a412c4171deb",
+          "hash": "be7cc6e8c0b00589d85db746f70f8256d237aaa7fa527d783a208f41c33e692d"
+        },
+        {
+          "id": "0702a02b-ac9e-476a-b164-adabe5cd0a9d",
+          "hash": "d332f663a53f5ad3a16f94ecae747e10c4fa32fadd7ca526cc1c200bb6cf648a"
+        },
+        {
+          "id": "d82bc45d-1d01-4387-a68f-d26021fc389c",
+          "hash": "876ff2bfc6f9db7a9a3ad8ee2e4fca4f37b38a4d23083125b9a4b48348b92a9f"
+        },
+        {
+          "id": "a6f4d218-ac66-4b26-bd93-86d73a70f46a",
+          "hash": "07cde32fd0fe6060024375f7170b36e4afcc7dfdb4bd9f24962b87af0b10ed1c"
+        },
+        {
+          "id": "55f58ce8-ecf9-411a-9ae6-47a8edb0d17f",
+          "hash": "57aea1c4ee8b1abe0958b63abc9992b0b674148ab5440e932c1d00353fd88dd7"
+        },
+        {
+          "id": "1c43e9fb-e331-4f49-9b65-2f562c71f52f",
+          "hash": "21025fba568cafb1a2652e8476e8b612954af3ad9478cc446f2afd994013556e"
+        },
+        {
+          "id": "dd966b53-0b84-4d18-9e24-e622401418d5",
+          "hash": "f3669ed349b086ce27703b722dc9db1aa33eef18bf96291e67dfd93d13d78352"
+        },
+        {
+          "id": "164f586b-42cf-4c7a-8213-74c81ae640eb",
+          "hash": "c26936347e86546a9b7abc81c3cf3700b605695eb7afd0bf1add7923695ff171"
+        },
+        {
+          "id": "465c195b-0aa8-4775-aad2-864076c92bfa",
+          "hash": "94fc78374e768f46d2c58dc8ba974c4f551c702958ff3fc4ad7b4c498c15d9c5"
+        },
+        {
+          "id": "871a049a-778c-4dbc-8b3f-6442db7df81d",
+          "hash": "5b8f8c8a3d9d0b8acabe0521871400872d06c9787e4c4ef364edda1182824ace"
+        },
+        {
+          "id": "460af190-552c-4d19-b312-d20a64e4bb83",
+          "hash": "ae16c35a7059f0f2f8ca822271ded57e16bcfcd56cff7c23f41cd8156beb5858"
+        },
+        {
+          "id": "13e4ba33-1182-41b3-a15e-7f40c7a3374e",
+          "hash": "272244fc6cd15745522d1b4b412463f69df58f8ee24d68a0d95ced5c4008449e"
+        },
+        {
+          "id": "30df0829-5680-4346-b58a-6fd3658f3de2",
+          "hash": "30db422c1faccec238e1da7b84b632d7c8be3b9aa0bb145e6866befd4c4f46e0"
+        },
+        {
+          "id": "917fd60c-705b-4878-8856-99425c6032e2",
+          "hash": "0e0191db64a5660f3a34383ef818f5e03f5e27e0dba93b1a5f56064eef2f1250"
+        },
+        {
+          "id": "e8f2918f-0a84-49e0-b275-6aca00d67b9f",
+          "hash": "09e18cf0dac0cf9a4081d10d6bd1a8b6e569b8a7cd3f2957c0812755ccfccda3"
+        },
+        {
+          "id": "9c9bbaad-80b7-42b5-9e73-7f492149f78b",
+          "hash": "b95604cef8e381bf45120f8476f06cd8e6885f76622fba19ea59d769b615956a"
+        },
+        {
+          "id": "6004a233-4f32-4e64-9433-c1fa2908b98c",
+          "hash": "83bde649b20e057547e7adb812b2d64db43d37917c4ad29f893a8425854e3f26"
+        },
+        {
+          "id": "ddcf34b9-201d-4c28-8030-466850d18e05",
+          "hash": "57f42cd00cd06b6e12bc87baf1886c4015d3e9fa3ed5dc6c38f351aca66bfa7f"
+        },
+        {
+          "id": "253ac7a5-4543-4562-b603-21e80f2dfdeb",
+          "hash": "747ea26e5ac9e57c9fe629ecc321ff81dd69a1e4442d4e056368a160cff66e0f"
+        },
+        {
+          "id": "7a36778d-b5a3-4348-87ec-42949210cf43",
+          "hash": "2db124d0a175e0cdf4ebc8ba54a6ba326fb784a9ef832c0e6f78d84bbc504847"
+        },
+        {
+          "id": "5ea68868-8b57-486d-bfe4-6283bba9be95",
+          "hash": "727c3e15bfc3edbdb0b92100edbb4735594ee1af016bed029739cbca08869db4"
+        },
+        {
+          "id": "0cc55bc9-bd4e-4c53-897c-ae21e55bb7cb",
+          "hash": "f918524ecec857ca4caf7d56f606ded7b756931adf291bef6633b85a2fd9c398"
+        },
+        {
+          "id": "45f3ff4b-053b-4d11-9b27-eae06ff600fe",
+          "hash": "4090d723fbb7f3cb7a73629708aaca7b311bee990529f45be2649abb7897b2a9"
+        },
+        {
+          "id": "eb7648c3-3578-4c4b-8d75-00259401d644",
+          "hash": "049b2e7d3b8ae1de7b311d0296211e88e24b056bd98b4359aac097dcbaddc73a"
+        },
+        {
+          "id": "bf153830-89a3-42c5-9df8-c36ae5601e4c",
+          "hash": "a8cf4cf2e5f488556f077b619de18fd7a53960d2fb0c780ba55288bd9b7dcbd2"
+        },
+        {
+          "id": "af37abc5-1a09-4d76-8adb-0f5deb5355f5",
+          "hash": "3c9b31ad83916b3b95186e82e9ceafa516e7954de6c25597bd94d500bb778745"
+        },
+        {
+          "id": "d3c7a31c-264d-4bdb-a0b3-c09a6d62ad64",
+          "hash": "f087a200be831f2908ec353a5ddfadaa6deca242e46ed14c67e3cd296128d5e9"
+        },
+        {
+          "id": "aa9cb5e8-4609-4d56-9501-48f85f709588",
+          "hash": "f7279619f840e4cd3873d3e6739c36d8cdfda6da43cc005dac7d422499cc331a"
+        },
+        {
+          "id": "b14e15d5-82a8-4e0c-b21c-7f0127ba83d7",
+          "hash": "9ad51ac39320fe3d445f0d39d8f99e053de92f76fe2ea4cff8795d7d0093e951"
+        },
+        {
+          "id": "09b4f4a7-e9b8-449d-9e2a-fd9214bc1aa4",
+          "hash": "5addcd6cc24296b72030a1abac23f21215a631cfc664002358f4f6177f4f8a6b"
+        },
+        {
+          "id": "c468b65c-4a65-48e8-a18e-ab71f3700ebf",
+          "hash": "4530b42a8a87b539d1fb71b9e77ba9a898bab63091b88a751970358160721a59"
+        },
+        {
+          "id": "1ac1787e-c31a-4b27-92e6-1ea52b965198",
+          "hash": "0d1dff1e4d754d17751183b57a67362b38329b1fa6774e999a0d0029b1270f2a"
+        },
+        {
+          "id": "cf943b28-bc1a-4830-b857-998ba3b76812",
+          "hash": "78373f0ee7c7d3a7e60a7b918eba794926a6dc9b6a35fab276091052885213c3"
+        },
+        {
+          "id": "20b3d89e-cf4b-4784-90b5-960685aa15a7",
+          "hash": "4e24a2f86c60f329770f11fc6c05f7d1dfbb187f8f44388af2418f44394070dc"
+        },
+        {
+          "id": "0eb00ca3-c0b6-49e9-93cb-1f34f2db1cb9",
+          "hash": "e7ab0016848358a02c99223c84da6cdcf9934b903dd88298cf5397e4016b9b0a"
+        },
+        {
+          "id": "be016774-5f6b-48bc-8f8b-2f8d775c2686",
+          "hash": "9a2b6ad4bfbd3955259d92afd26ce9a071156bd764e9b1a412e5e92b112c1f8e"
+        },
+        {
+          "id": "abe12a21-ef91-4a1a-9038-638a279f1771",
+          "hash": "c3f8973bfc2a9fe4163dcf0d2ee1c26befa23389de762abf3e3f3e44063908dd"
+        },
+        {
+          "id": "626faeff-5639-4911-a0c8-3fb58c3f7ee3",
+          "hash": "0d73af7f51e37c757a32b94ac2c330e8fcd5bc598bde704440039665505ce42f"
+        },
+        {
+          "id": "2c2a4e1c-0c7d-4a58-8b1c-0ac0dbd7c04b",
+          "hash": "2a19e1aae42c065deb2b951250757009e0f866eae1dad3ccf9c8c7c32a897415"
+        },
+        {
+          "id": "48f5fbb3-8566-4eb4-a75d-33889a0312dd",
+          "hash": "705fe2d8e3fef289939a3d05b008f17e58a81c25dbb49bd360b9472e3ee7b2ce"
+        },
+        {
+          "id": "72436fef-c721-402b-a665-754ea5c1f67c",
+          "hash": "5e8cf0710cba938450568737a526f16e1b2ce810708bf0fd877f441814bb2312"
+        },
+        {
+          "id": "49fb327f-4883-491b-9b27-b23b657c2083",
+          "hash": "fff0132ed8d491f0b4931e675943204cb96c3ab59a3802807ce90c1d08b45076"
+        },
+        {
+          "id": "dd235475-f408-4b7b-9132-09dc833a9ccf",
+          "hash": "4e0ce04a3ee09bd531328c1bdb33a8357f56fd604c54a7ecfcf765d7f84fb294"
+        }
+      ]
+    },
+    {
+      "page_id": "page_466c7cc880848191868fee59d5e652f0",
+      "file": "02-architecture.md",
+      "title": "mini SLA harness 总体架构与接口设计",
+      "source_url": "https://chatgpt.com/space/page_466c7cc880848191868fee59d5e652f0",
+      "source_updated_at": "2026-10-12T10:17:39.583564Z",
+      "source_sequence": 5,
+      "block_count": 62,
+      "kind": "formal_design_target",
+      "source_characters": 12833,
+      "source_utf8_bytes": 22296,
+      "source_markdown_sha256": "2680ae2c16c0735adbd29b3fc24638b3091e41ec2d8dd0c35e6e6ca634a2b75f",
+      "imported_body_sha256": "07df4e00581f7dd09a01d85a2d87d6f63682ae73b216dd4a8470fb5fef399106",
+      "fenced_code_blocks": 5,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870": 1,
+        "https://chatgpt.com/space/page_6dfa06bd527c8191b010802445f7170e": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "bdcb0eb1-f9f1-4444-a805-b4b97ad637d2",
+          "hash": "6fcec7d85650d4d07380c77d6db6c6b6e6db6d7e8d1e05a72b311da49384afd7"
+        },
+        {
+          "id": "58f3ce2d-d3be-4d2b-b383-d0cf0d13d0cf",
+          "hash": "4b6686c44a93be47955f511dcf6d6d587dd3c9939c6d1fe1193b5fd126bae219"
+        },
+        {
+          "id": "fe125697-30b1-4f15-b052-b3a2f1f9018b",
+          "hash": "74cbc9d9241b7da817e70482956b17ca6849b73000b0007fe7794fadc5e15459"
+        },
+        {
+          "id": "e15312f9-19f1-42ac-a395-9a7505dd774d",
+          "hash": "bd851c283b8fbea9cbb1e6cf2c3ca9544e087c4324c89b3628c0e558e06a1d4d"
+        },
+        {
+          "id": "ad255acf-1331-447b-991a-6c19f4f9d33f",
+          "hash": "844ebf5d49365fbb625950a85247acf8f6bb71cfcf79424558634c480729cb20"
+        },
+        {
+          "id": "5a72d7d9-7caa-4d42-95d5-155d6ee3322a",
+          "hash": "d20de8374c49c6ac6858618460a6782085b8bbf9d270bcb935052a9305de282c"
+        },
+        {
+          "id": "928a226a-285a-418e-a201-31304e693db5",
+          "hash": "50cb432b33d7edd3339e91d7f25bb7ffc3b199139518107372fff8e206b9962a"
+        },
+        {
+          "id": "dc9f54ed-478b-40c9-9cc6-12cb9393d414",
+          "hash": "792db0eac3924edeeb632b0c0868fa5cc9b4de577f9d2849dcf8a2b626e832ae"
+        },
+        {
+          "id": "3a038134-a609-411a-ab1c-26079bb34154",
+          "hash": "e588104fb6ec167fa8a782c20215028a2813b3b1380443125b4d8e61d46bb564"
+        },
+        {
+          "id": "bbf66715-6c35-4168-99e7-cc1dea7d330b",
+          "hash": "607ffb42cbe7ea783d1f1bca42aa016df4ccba184b4ebcfeb7708ccc5b6dd90b"
+        },
+        {
+          "id": "5f7128ee-7326-4c0a-ae1f-50156da21a8f",
+          "hash": "46fc524aa48c54fb7a2287cef7ef27c04434b8c767ec1243415cb1d0a2235f8e"
+        },
+        {
+          "id": "c0fcb36f-1392-4241-bf75-14d105792e8c",
+          "hash": "db0ab11ae5744cb9a6fbf7d9c104ce989ff4b01a09b7ddb638727c674811c328"
+        },
+        {
+          "id": "92128024-37e3-4997-b98d-d297067dba2d",
+          "hash": "6f12068640bca0beda80ecb4d2a27d0abfdb7f3cdc8cc2b61278f8a520dd9d0f"
+        },
+        {
+          "id": "26eccb89-0da0-48b9-b412-7110a21c711c",
+          "hash": "e5dd09a7a87c3f1787f88b980a50750bd5eb40a02734ea8c940db750eede2fc4"
+        },
+        {
+          "id": "44963f9d-2447-411e-ae7c-a64aa2b2e21c",
+          "hash": "40d8dc7fbda7762bfd4c67b852b6bf4baffab7ece9bcd7c7860714c90d320b1a"
+        },
+        {
+          "id": "35cfba66-3e4f-4bbe-a84d-68718072a458",
+          "hash": "227ad25834c20a06aaec7b75cab1531efcb490b19057c7dd14715e6e630d0532"
+        },
+        {
+          "id": "bef6ef43-2a61-4ef5-a70f-e59105fd3aac",
+          "hash": "e56af13d2ff63f44eefa704e431f474930eb131d2e1326e27b217f36398b8074"
+        },
+        {
+          "id": "aec6fea3-06f2-4eef-a340-596161262581",
+          "hash": "034be18547ac9b665fbed01176b0d5c17d68a69e26ab1b5a752575901eead470"
+        },
+        {
+          "id": "b28aea47-6fd0-4c95-9ecd-f058bb166684",
+          "hash": "aba469e74596e7de7031559ea9de641512e28602d6136d50cb5c612d81c235bc"
+        },
+        {
+          "id": "1e754a2d-79c3-4c39-8a43-2c751c70ba20",
+          "hash": "20ca9cacdee7dc0d83dd5800aa88c29aebfb457c074cf5b613c6090b2ffb7530"
+        },
+        {
+          "id": "b79b86f9-53a9-4371-98b5-1c13397528ae",
+          "hash": "b7792463472301e8cd2e0881acbfe2187cbd878bf556689c4eb02b33f8e1895c"
+        },
+        {
+          "id": "0b78a222-f60b-4444-9f19-f5517849df1e",
+          "hash": "ac7fb73c987801c1c1063ca0568745a0b1ba15191c6678609258d9a1f3450517"
+        },
+        {
+          "id": "2053c710-5b67-42b2-8cf8-4eda8fea080f",
+          "hash": "d0f88cab3455c10d8e0252ebcd78ce1ee48bb61d896203e7af8f2b2a94395227"
+        },
+        {
+          "id": "defdf8f2-e020-4eb3-a6c9-c278ef0811f5",
+          "hash": "86d1173c95d3b5e822f56bc70790320bf805a586885145f205a0abef96b7524a"
+        },
+        {
+          "id": "5da92690-115e-49c4-b002-2798333cf975",
+          "hash": "b651b0213e399fc144aec8e5d814bf87dddac41d073b9653be15d167a75e05a5"
+        },
+        {
+          "id": "b5c97065-8b3d-4a77-a463-1ba4da52b6a7",
+          "hash": "2e66a74467ffbea6e32fc29a250c091df1de890806bbba89f34e9099a770e5ab"
+        },
+        {
+          "id": "02c2ab92-9dae-44f7-adf8-c13f9434d04b",
+          "hash": "ce7115c0fd7f8a1161228f133a4b5adaa026443c3821068deeabbdfd7702f4da"
+        },
+        {
+          "id": "549e3d06-6480-40b2-9189-8a4417712db7",
+          "hash": "41280d942f0a4e1516e77acf6d476ea89961c49b9444a8d2cd28b8a8afd85100"
+        },
+        {
+          "id": "bd54e439-35e2-4066-a535-92b9b75dd76c",
+          "hash": "bf35cef41d7eda461228ce759fe1d8cffaa102ab2f27cae57bc559b775e6b90f"
+        },
+        {
+          "id": "2aaa6005-942b-42b1-88f0-44933f7ce792",
+          "hash": "c1c2e8f30d3d7a5ce398c628ea9f50ca23f2d1107d4e6856a8dec9e0babddd39"
+        },
+        {
+          "id": "dee58d17-f33c-4f4d-8a43-f418bc6b0f55",
+          "hash": "f90efb56b7605cfb79fdf5f433e15959c4829e055492762bd6e2a42fbf53b85c"
+        },
+        {
+          "id": "22d5e2a9-0197-4b52-8ed1-1c281a4a6f2a",
+          "hash": "16923af6506f689a9d67e56973fe40dba7bb7d940b2b989573d6c753c68a8546"
+        },
+        {
+          "id": "263ca00f-be31-49bf-9677-f8409f9af2f7",
+          "hash": "8c8af517746470100594e748536cc532398310cda2096ad12e8e4671c247457e"
+        },
+        {
+          "id": "2c30b30b-e513-4688-b858-13864271522e",
+          "hash": "edf60e3043b9a027571109c8795de777c378bb9bbe79fc2987d55ee22d7e4144"
+        },
+        {
+          "id": "b3c9245b-8b89-416f-8b8d-10000fa021b1",
+          "hash": "41a020a22cf0f00f8e225e51c24bc7f4ce9ec52987bfb78879919205f5adedae"
+        },
+        {
+          "id": "bff8b166-f8c3-4977-8186-cb7994124614",
+          "hash": "b9ab13e8ebdc41d8b863230b9d0ec2eaac0d64edbeaaa4eeed058619eaebdd1a"
+        },
+        {
+          "id": "1824b7a5-028e-4ee8-a492-b431c2caaa89",
+          "hash": "ea0e8ce8d23738f5c421abc69c4737008b9dbf4d48f2a5cc85972b346f2ee782"
+        },
+        {
+          "id": "740ff8cb-9ddc-476a-84d0-58cd9f159ad5",
+          "hash": "f80831ac7f4509f6ad2effdd094bb90963fb8e2aa96ae91bf35591796de779e2"
+        },
+        {
+          "id": "08ef3317-853c-4f38-b1a7-1d80299af160",
+          "hash": "98a2bf3523135bc3afc0ba02c99d91228788d5fb86c530e3cc6778cd653eefb0"
+        },
+        {
+          "id": "7ed0fa42-25e9-48f7-8251-645eda519457",
+          "hash": "7a314f8bf216232cf9a1f6733d49d310d5dbd79e775cc6a74332452fcf3a8609"
+        },
+        {
+          "id": "046c3120-79d1-4301-a5cc-f688fede8a04",
+          "hash": "95c63a2adfcd0532cc6c520b2d0a90cd9fae0b4117b10255af95555d5b880892"
+        },
+        {
+          "id": "b2f15add-b087-4313-8b2c-ddd768674650",
+          "hash": "66463c3d568a3737b6619c67233044e8989f999889b2f7c5412355045e049c8a"
+        },
+        {
+          "id": "a4e8e13a-dda7-400a-a6db-c93b0254ce29",
+          "hash": "8f3ce786a191a295d838542ab795803849921e9aac46d2b1b45da6dea3a67baf"
+        },
+        {
+          "id": "ea6c2099-cdc6-4027-9f7c-87361a5b9e8a",
+          "hash": "5a85f63a46e4705f3eb33d3142b1e1c830a3d02c7ab7b65470eba1ef2382c9cd"
+        },
+        {
+          "id": "d257c142-1923-4cc3-a630-c520fb185a24",
+          "hash": "b32f6a0a26c9d38d19928053abcf43d38238ab49566c99f568f6426206264ff2"
+        },
+        {
+          "id": "2e04b9b9-31e1-4ed4-96ba-531f92230f1d",
+          "hash": "df95750bc42fdb51cc5c8985ab710bacb82189a853b6065eaad783102f26391c"
+        },
+        {
+          "id": "4bca89aa-3c3b-4542-bb9b-7b2e353cb73d",
+          "hash": "8d59e79009cb8bd63575cdba8f63956210fddc647ffc92fbed436c69e5e426fc"
+        },
+        {
+          "id": "e58a776d-c7d5-49c7-b914-47d8689f566c",
+          "hash": "7be3fa33cec616e7596c7a33a29625ecf79cfc8e049d6d5eb771048387cab233"
+        },
+        {
+          "id": "31b2b6fa-7d49-4329-8a22-6e550f686337",
+          "hash": "36f664452379925fac54b5b818217b07f1dffeb60ebd083287cf840cf517e712"
+        },
+        {
+          "id": "8325e6b5-bde9-4687-91b2-ff5641a1b7ff",
+          "hash": "c9b92500ad285f00c2b83050873b17439f04c72c51b99ff8af4bd8b3a04a7f46"
+        },
+        {
+          "id": "a25e60c4-b480-44e1-a69e-a6b3fc1d782c",
+          "hash": "c67dea46290ecbc599ee3b83f9d9016fbcb8cc7501325b0902ca1971e2ed65e8"
+        },
+        {
+          "id": "6ddee4d5-2599-4549-85be-53ec567d475b",
+          "hash": "68770c03d260b88d600f3b6b76327da18a7e388e27a29a17d4f1d28a2bfa481e"
+        },
+        {
+          "id": "06a4e02e-b0f4-4a87-a216-62b2cdac00e1",
+          "hash": "c974a3782b8446b48043f1a03181132ec64b0e6c068bf2f0153627a9af5555ba"
+        },
+        {
+          "id": "d3b5b47f-5211-4a3f-835b-cc9c1a9e3ce0",
+          "hash": "75d8a817cb8159d668a5a609a94b16e8e789dd87d6972615aea32f617e78f0e0"
+        },
+        {
+          "id": "e917b9a7-523d-4502-9b76-adcc1a3fb061",
+          "hash": "e7356c32ba062b2949a6cb37666f9fbc4c5cc42ad0c8ad1b555476f51afa21e5"
+        },
+        {
+          "id": "3b0c046b-5889-474b-aa9d-78074a0daf94",
+          "hash": "654ae99fd703e8fcc1c02afcfe9130251315e3ee5c090e5ba3df0b9204955d24"
+        },
+        {
+          "id": "bcc20113-f49c-4b1c-be5b-0cec5c45ceb8",
+          "hash": "58208b7a6bc37a29757fa490f5d00a84b4221746394302afc6dc7735fdceb7ae"
+        },
+        {
+          "id": "ec6474e1-6be5-4933-b9ed-ba72af8526ac",
+          "hash": "2d087519c2cd87817422ace34b724c035e50a414e7573738b2fb12d0b60ade9e"
+        },
+        {
+          "id": "7cff4022-0f7e-45a4-8127-a6b08724fd12",
+          "hash": "8f4a921d647f5af6d71a501cb10649ca10c710ef75fe6d72426e60685a5a9b71"
+        },
+        {
+          "id": "69475c47-c248-4248-bfb8-600d00674d6d",
+          "hash": "5a80c29a33b8824e12703484e1f50a55dd3ae00cc7435df5366e8395e7fbce24"
+        },
+        {
+          "id": "1d65e34c-1e1f-4a64-9615-d6a77aba11e0",
+          "hash": "2f3f1c79e28b4007c6cf9ff6425686404f007c8a444040863cfd1fbce566da2b"
+        },
+        {
+          "id": "6bacfcd3-d4fd-483c-b6f6-e15eca04dc70",
+          "hash": "ff0d99a2ef76e8ac348c1b2d2ae6dfdf0b60fe9f41ced3be4e13eacbc1148266"
+        }
+      ]
+    },
+    {
+      "page_id": "page_e0f7726dd0308191ba3c3fe229dc6efa",
+      "file": "03-state-transactions.md",
+      "title": "mini SLA harness 状态存储与事务协议",
+      "source_url": "https://chatgpt.com/space/page_e0f7726dd0308191ba3c3fe229dc6efa",
+      "source_updated_at": "2026-10-11T09:05:17.933304Z",
+      "source_sequence": 3,
+      "block_count": 69,
+      "kind": "formal_design_target",
+      "source_characters": 22088,
+      "source_utf8_bytes": 34985,
+      "source_markdown_sha256": "7bb56ab55f54a1463c53b74d65d43428a216dc1b9a6d2ea545ff16a9a8e49b23",
+      "imported_body_sha256": "6decddb822e0af853f4db0845a3eda48cf3e44b37fa060af05c44e17700c9035",
+      "fenced_code_blocks": 4,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "67b76b3e-977f-476a-91d0-94b599a2ce6f",
+          "hash": "6fcec7d85650d4d07380c77d6db6c6b6e6db6d7e8d1e05a72b311da49384afd7"
+        },
+        {
+          "id": "5338d354-e9ea-4256-9caa-78a62e36fb96",
+          "hash": "4b6686c44a93be47955f511dcf6d6d587dd3c9939c6d1fe1193b5fd126bae219"
+        },
+        {
+          "id": "8e53c6a0-6207-41f5-8102-59cbf6007e47",
+          "hash": "43f93ddfb3cea4bf779143e7f5b7aa31c630e1e25295852f6a7f1b7aefc5e621"
+        },
+        {
+          "id": "90e8ec31-1ccc-4c21-98f5-09d1d1bae393",
+          "hash": "781f2b256eda2eddf5b8de1d20ac5885def16bb9bd1951f09578ad2f351a7c58"
+        },
+        {
+          "id": "dd4fb3a3-3e24-4cfa-a66a-9b78208e3546",
+          "hash": "06c527f800b409128fcdaa682a02e15347080c6cd7a1ab1ac007959db130b675"
+        },
+        {
+          "id": "a2e1cb75-56ff-4c40-928d-781b347260ab",
+          "hash": "8df7533d7a8cbf997bcae478da4cb7707937f6a1f6595364d96fc97a16444cd9"
+        },
+        {
+          "id": "30db6e91-f3ca-4f05-a17f-7a53c711cb0e",
+          "hash": "18583efcec5e3fef6172f283cf084642990926f025a7db541afc4082fe3a864f"
+        },
+        {
+          "id": "0aa4afa2-3711-4513-936b-05075868d344",
+          "hash": "be167eafeb553631131dc04c21cfc33aa87e7cd2d5bfa1ade8bcb44c8805274a"
+        },
+        {
+          "id": "272edb78-b6bb-4461-8bcd-8cae2acb3204",
+          "hash": "dacacbd4d638575fa25d97387773ee6a1425f84beb5bbf5b690690ad8a6b44c6"
+        },
+        {
+          "id": "23db19bd-4f21-4604-8602-6bf7773e9db5",
+          "hash": "f3f73e6d63c969ba6da84e50c029312b7aba3df9f5463b7635af35c5ea77e335"
+        },
+        {
+          "id": "ce97df5c-802d-4024-a6a5-ac0406dc6ba4",
+          "hash": "72c9da7681c2346c5c49c3884fd36bd875f5e3c773337e1b32b04035cbd23f59"
+        },
+        {
+          "id": "3285350b-dfc7-4b94-afaa-f5bcf94c7a36",
+          "hash": "5081c3cbb8ed20a09bcb47b29a58d436007785cb098a6431fd95b7dc15109bc8"
+        },
+        {
+          "id": "f794f8eb-54d5-4f0e-ac5c-8b1dbe494d22",
+          "hash": "dacefddc69a8326c84edaafea299f063bc93c04b4c6b6ca6cb0c619d4bb64309"
+        },
+        {
+          "id": "18488d54-cd4e-4ceb-a01d-98ac6421dc82",
+          "hash": "0cb0e220d6478219d5c80fc435983ada8d50d7535c2301ef7955c12b7d68a9a6"
+        },
+        {
+          "id": "1abf6fe2-1fc7-4416-826e-97d6aed19fc9",
+          "hash": "8dc2ce42234edac1640aafc355e7c206b0cb97f4801a66b592dc44f6ad3f165a"
+        },
+        {
+          "id": "847cbe44-3891-4a5e-b288-161a3081817c",
+          "hash": "df6659f41ef12243a3e57de0692955776a4076167016a390eb7bc49eeddd17e3"
+        },
+        {
+          "id": "579fa29d-3e77-4ce0-8aa4-1fb66b9b33c8",
+          "hash": "379b46cfa799fcc510311b4518278b9075744f54405d3a37241565a2354ed279"
+        },
+        {
+          "id": "03d9ac83-3a04-4fb6-bef5-971b8feeb618",
+          "hash": "3c7f104be60a96b99a191209baa35bb0fb668d69e0fe9d54d4fda84570cf5464"
+        },
+        {
+          "id": "feb8396f-c449-4ea6-aa4c-296a60ce0fbe",
+          "hash": "d27c9bf663b75d113409977cb0deb52b31e51509e23499de7235344cd4e3be01"
+        },
+        {
+          "id": "60019bb2-d678-4c07-82ff-c1ba3e01d78d",
+          "hash": "e80601bcb93916efe33d3cc68a4ebd1b37f461015047d9b071255692896611ff"
+        },
+        {
+          "id": "83af8653-5731-4418-9aae-a51f4f6780fd",
+          "hash": "dcaa1c3baa3e0feacad8594fc42755f34c625627ca1257fcdef8b54ed51508a0"
+        },
+        {
+          "id": "a5c48f67-4bd4-42d6-b87f-f03566c4ffe0",
+          "hash": "9d20634901b8810fb4555a776c2c7f407cac7833715c2483ed19bccc5797dc58"
+        },
+        {
+          "id": "eeeab0e2-a852-43d3-b206-b260998d06b1",
+          "hash": "d97225c7b73c83a4feba9229a91a13e42ef5dbcac68a55844c7b508b13b583ab"
+        },
+        {
+          "id": "0cc2d10d-6b33-435a-8081-967d536f5cb2",
+          "hash": "104cbb5b60e86f2b4ced3c1b4dd4ac6ded48c11cfa9a4e32ba7649fb98c2e830"
+        },
+        {
+          "id": "f108392a-bcb3-4f82-a9e8-926ee83f14a1",
+          "hash": "56eed90e909269ba1b31bcdd507feb3348a97d6511bc10f4aee130ab83718a2c"
+        },
+        {
+          "id": "c4986973-9da6-4c3f-82bf-fa6548dfa5fe",
+          "hash": "ecdf6eec666ef801ea11ed6e1a913a95516ae8a81946c0b1d93bbe300b449d31"
+        },
+        {
+          "id": "50b0a017-dffb-487b-ba07-9c231c3b9769",
+          "hash": "708a3bffeda5f451dbdf4a92c7ee0b2c47a73de025609e489261cfb657c8ad8b"
+        },
+        {
+          "id": "918cf7f3-2f4c-4cbe-bee2-54b56ff71f5d",
+          "hash": "165db8c2a2a2a088c4d384af1d88bf7704ea8475b0ecdb8fae52e24a76e9556c"
+        },
+        {
+          "id": "1867fc19-ed93-4fba-8ab9-f9c9791053ee",
+          "hash": "85b8c4885caf07934e32c6cd93d3731ccf51264d2cc2f22740bd46bc413f1aad"
+        },
+        {
+          "id": "144b7709-4274-48cb-aff3-bbd9959595c7",
+          "hash": "c2ca608a36d5115299eaa261d5f98c5c66cf9190d121820dacad4a6a35860495"
+        },
+        {
+          "id": "a2a62300-9457-44c7-a695-e0d16ec377bf",
+          "hash": "ce26c9778baa15a862179ef48474810986a95de4cef5e38d4d4bae1a368d9650"
+        },
+        {
+          "id": "0357ad58-54c6-4261-97fa-b04c382e10f1",
+          "hash": "2310c160ab1635c1c9f854c94635fb83a5e728fdcf1fbd6f348738051fafa739"
+        },
+        {
+          "id": "8699db1c-7777-494d-b143-c076e12b8076",
+          "hash": "4df7b060ecff8c01d5d61009bbe35b3263f6cf3745a868ddbfc684e2375681f0"
+        },
+        {
+          "id": "c9f6ceb2-11cf-4daf-a1ce-83c76793f4dc",
+          "hash": "eaf23536aba418c4d37833af42768adcded91b4a245dfc831ea23010c263f876"
+        },
+        {
+          "id": "5a7da28d-18df-4702-a587-21a5e92cccf9",
+          "hash": "f61f4a6296d29104dd32c8f387384dfe0f706989e7de7c3a3dcdb86b741fe261"
+        },
+        {
+          "id": "4ed42b5c-dcd7-4770-9068-813ae6742c5b",
+          "hash": "df14e58935d23e3b3d5090b3eddae3a3fad0145a4ec77952afe0f298172d20d7"
+        },
+        {
+          "id": "c8ac443a-cc74-43bb-aded-ae6ef764cd83",
+          "hash": "37e0d033787c0b40af381152ae9f7f32c33830333ba8403480bf29553a9fb857"
+        },
+        {
+          "id": "4afed24d-e596-445a-8f06-06302baea258",
+          "hash": "e983115a87634fcdbaa4680315087504eb6ef629be8d1761c93cf2b00a527672"
+        },
+        {
+          "id": "2340e39e-dc2a-473f-97e0-49dd6c1dcefa",
+          "hash": "18e440aae701284d585e1d8f54de203d9f0f12e177da5cddc8944d8462b21faf"
+        },
+        {
+          "id": "5b907c04-6cec-471e-b153-fe27bfd46908",
+          "hash": "170a0b2ff06e51e5b384751adb0901e3e0c041000742bd7584e95cd3c2fc4dad"
+        },
+        {
+          "id": "6cabd1ac-8002-4aa7-914a-7c69ad7a92fe",
+          "hash": "4a9ce6519e4b6ae5d32a9c86164b3fd4c4f4bcb653de3130427a34eefa2b7c0a"
+        },
+        {
+          "id": "02b4c26c-f5a8-4da6-bef2-d7f59df36b5e",
+          "hash": "df64aae486ff0bb0ab71b2b23fb2ed1adeb18b8be3d18a0a852edcc3be9cf22a"
+        },
+        {
+          "id": "173a834f-983f-4417-be61-6702e861ccd2",
+          "hash": "19066214dc897abc45fbfcf6d15655a84a79b215c1cb9d49b050922c762cd024"
+        },
+        {
+          "id": "5cc8cff3-ebec-49fd-a6c9-c9ebb1d08646",
+          "hash": "16fe2b975df69190b9ff8d42705e57a7533564eb3b9d0dac21ef9779d5ebbcbe"
+        },
+        {
+          "id": "02b5652e-290f-4a93-8108-855f3640c139",
+          "hash": "f11570173ac3ffb53fea94182e4d575ce08a1ded8e086b3b88ac0b6debea77c1"
+        },
+        {
+          "id": "9161decd-a8cf-4c66-b7d7-25e8f5c2baad",
+          "hash": "d855e36c98bededb78e4c84f24058d4ae1a438e975bd1afb5e726c7af07e4989"
+        },
+        {
+          "id": "aa5b0db3-52ad-41e5-8679-d401e3244a96",
+          "hash": "697e0a39f33178ff3c0a1085acc523c0eda42d41a2298f3e16bc948f1f093878"
+        },
+        {
+          "id": "5721d04c-dbe4-479f-be87-1fb56e47263b",
+          "hash": "555a90c5565b8248b8369beae097337380c980877b86313e408542099f32f5f7"
+        },
+        {
+          "id": "559a6184-7d04-4234-98d8-47f9e8cf9c00",
+          "hash": "36ab343af9f3071be1359ef3f3e586a98400cb7e09cda791428bc5d3deea107d"
+        },
+        {
+          "id": "23cdb514-c95c-4159-96f2-bebf67de9b8a",
+          "hash": "c8d1b2f9ab867b485a96a0bd583684a517c824650ead1ca8e4f23e8e995a83e7"
+        },
+        {
+          "id": "32197f66-568b-4fad-b688-f5d37214d804",
+          "hash": "a0eb62fa8c31d96a598241261d308b41a8759f2603655edddb4f8974f3780071"
+        },
+        {
+          "id": "10c87a03-25b6-41bc-920d-472c5a0f0649",
+          "hash": "2bf599abe140e578e4ede6ab1fedd11f41aa1a86c1669d3bca7bcde729bff48e"
+        },
+        {
+          "id": "b3fbc1e5-0e40-4d99-91ca-abdc0fe46ca8",
+          "hash": "3f80be31d746766cd06cabbce6682b71b3de0bdd5aeb16d8fdf92fde0b012ab2"
+        },
+        {
+          "id": "ba2e4694-b614-48ac-bd81-8230f44c246a",
+          "hash": "a6b1e5beada0510482210db7c9839fd66f4d8a502303610f4f2452fa87abd3d5"
+        },
+        {
+          "id": "1420a0d8-5d65-4a7d-920c-0bade5a243a7",
+          "hash": "50e5a0affc816681da092f43d0f4feb3cfb93b560c3f70e365cb71cf5825e65d"
+        },
+        {
+          "id": "3c0d8a5a-bdc8-4afe-98a2-f7e1972a260c",
+          "hash": "12aed36cd557af127da74d43064a0a12805ff6e271956770eb9254531b090ed1"
+        },
+        {
+          "id": "21fbfb8c-2c03-405d-9caf-ded6ac58835b",
+          "hash": "5d3eb46fd6d93f7d9fbee8c06ff6ca338e2cbf6b2dc791ad019dc06ccb63e19a"
+        },
+        {
+          "id": "48d096aa-00aa-4c9f-b093-231d57c6085d",
+          "hash": "e7e9d9d868bec2e070c31e1fd1800ddb594b1a37bc31424220f2ca57974af1eb"
+        },
+        {
+          "id": "aff064c1-8d57-4cfd-9601-58f87fe173f3",
+          "hash": "77f72fca082bc47a724d621c4c02927969ebb7ecc7debb4850c713addc3ba371"
+        },
+        {
+          "id": "4b438e06-3504-476b-a068-db9f111d3217",
+          "hash": "0bd8577081b959069e70bc7104024878956722a0322cb41cdbef567632f42b18"
+        },
+        {
+          "id": "828cf8fc-203e-4d03-9945-6427d8b18aa2",
+          "hash": "dc4959c10621b1a765ba9944e54dcf97f9ffa7c814d58fb54a2ce7d055b9a592"
+        },
+        {
+          "id": "7d02b5a1-a35b-4445-a9df-75b2d8d86c92",
+          "hash": "457bc3e49a132750aef3e534f2ddfb98be382b70d18c21f789c35dd556011b03"
+        },
+        {
+          "id": "90596493-3636-4b01-b4c2-c0c454e65069",
+          "hash": "c72d2db982af32e85688eacd83efdd240aa2d6def34a93250ea5a9bcea565d3f"
+        },
+        {
+          "id": "c7ad6404-5bee-4454-afba-24cbac6caa15",
+          "hash": "5825ef689a2ee7b34e445f1f70a530306c1cb622330040f30be05bd9896b5d01"
+        },
+        {
+          "id": "97f447fd-5214-4e61-9bf4-a5e2dcdfb140",
+          "hash": "f4f9477c5efad5e76e29237067b8a6e47660a01285952f8438e5d7ad72522785"
+        },
+        {
+          "id": "41b78cb2-2f31-4b19-9efb-f74bef9b91ef",
+          "hash": "95e4088f38a04b76576508ccfc930c05410951d764f3c0e988ba7c42b89e4a51"
+        },
+        {
+          "id": "b3d7db9d-f032-4060-883f-85c28bfa5909",
+          "hash": "ff7f8f2b315ee2793f12739934ed040a64771a39a57f286294eafda764cfe53a"
+        },
+        {
+          "id": "0cdb305a-27d7-4822-8608-68e5f985e340",
+          "hash": "fe94bdacd77a00be1da7f0a43f5bb3106db76af5f7bb57cb3a59e8d64415a970"
+        },
+        {
+          "id": "f9d68ff2-efb1-446d-a011-3ee96013bbae",
+          "hash": "717179f6e074b252e2aa0a0a7db6134e1f1cc20ed616b932d06fb6b6661c3839"
+        }
+      ]
+    },
+    {
+      "page_id": "page_02ab1ff0cbe08191832190d785c66f5c",
+      "file": "04-implementation-validation.md",
+      "title": "mini SLA harness 实施与验收设计",
+      "source_url": "https://chatgpt.com/space/page_02ab1ff0cbe08191832190d785c66f5c",
+      "source_updated_at": "2026-10-11T09:04:37.221830Z",
+      "source_sequence": 2,
+      "block_count": 48,
+      "kind": "formal_design_target",
+      "source_characters": 10533,
+      "source_utf8_bytes": 21457,
+      "source_markdown_sha256": "3899d0fff47a0e5cd45bf5d276b0388ab11b437aaadb5b39fc905ecd5bdcf1f0",
+      "imported_body_sha256": "67414a52b4ec12c58bd6b895263007a6dae3c09bfc2b19b7f6137f12750434e0",
+      "fenced_code_blocks": 1,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "d6d520e8-2837-45b5-a258-201c7d125797",
+          "hash": "8a256069881a03339dfb58b8bcdfceb6deea489b55f6c5c419ef214fec2b0a44"
+        },
+        {
+          "id": "fde3bfe6-ecdc-4739-8106-481c3005420c",
+          "hash": "4b6686c44a93be47955f511dcf6d6d587dd3c9939c6d1fe1193b5fd126bae219"
+        },
+        {
+          "id": "72ce85c2-e7c2-4787-9dcb-25acca088964",
+          "hash": "4d58cd193d8c92dc513b60d79f5b02ccafbb41a0033534bd8ac84f1ec4856e8f"
+        },
+        {
+          "id": "eba008e6-1366-47d0-97f5-78470677b169",
+          "hash": "e002f367a11444c4b1c75ec06fddfef13654fef9b70f3e139e60113220d79d16"
+        },
+        {
+          "id": "c71f7c34-4dd1-46c1-8f9e-b7bf47efc14e",
+          "hash": "737df9a091315adb992402bb7fa00afbf6a446b6f650be3d95453dba8c5a225c"
+        },
+        {
+          "id": "00772b17-eb12-4676-bb23-939cbdda0b75",
+          "hash": "c8ff587c3eeabe834b71dcfea4020cbe3017c913da5de66644ff062eeed69214"
+        },
+        {
+          "id": "ffc7eb81-243f-416a-b068-5961dff38cbe",
+          "hash": "345c3b55001248615377ce90d9db70733b5dd4481cb9c817508843c410ef5769"
+        },
+        {
+          "id": "3468b2b4-6b1a-4c11-8502-23e7d584720f",
+          "hash": "392dafc1b85cdb3ba1ec90decd748253547fd2e0f09e6df2a48f9ec003209ec0"
+        },
+        {
+          "id": "6f5082fc-d301-41ad-a5f7-cf0a20f2bdab",
+          "hash": "59cdc7b08a46b881783116e81cf563e8dfa9642d059d3795057cf36441d540d1"
+        },
+        {
+          "id": "6fc01791-f7db-4951-b42e-839c88daea48",
+          "hash": "d26eb57cb1e1e89b2247cde8faa394138ff12441042ada667dbaad4d3ecbf8d2"
+        },
+        {
+          "id": "02219cb0-390f-4ebc-bc84-c18916e1a108",
+          "hash": "03ac69640ae21348e445ed19376a9d996cdeb780890c6241c393b0d6cb7f0ee2"
+        },
+        {
+          "id": "7e01ed69-dabe-4e67-aba6-6b828575336d",
+          "hash": "9490d591e7790ba13d87fd580bbfd2cd718dc73d80e36612b9142e5ce989b8b9"
+        },
+        {
+          "id": "edc5d9d6-5717-464b-b3ad-b78745ec2541",
+          "hash": "49a3bdeb9ada8a9399e68ef00b120f038717f80c220e211d6e6fac6841368ea4"
+        },
+        {
+          "id": "50db463c-dbb7-4ed6-8d64-76f904ac68fd",
+          "hash": "ba173f246bfdbf4f0b6ea48eb45ec6907306c5c34b0e2ad6abe3082a96fbec66"
+        },
+        {
+          "id": "8da10504-b2ba-4446-8b53-cea6579544b8",
+          "hash": "bbaa9d81d03489a648c5ecc3c5b1462f1672462c4ae6f17554a11cd61c71e379"
+        },
+        {
+          "id": "6e59dfac-b226-40c2-942a-786672cce6e6",
+          "hash": "cd98e1287ebcd0959f8b6d2b07aeed23811af0b82e1385670aad974cc869d70d"
+        },
+        {
+          "id": "3e1fd465-3962-40b0-afca-362fb860bbd3",
+          "hash": "6c7fa5804a52c33a7fa8937724d82d67ba22b135ddf131c39bfe69e4280dca08"
+        },
+        {
+          "id": "3e2d339e-b830-493d-b5c8-b34f416fd576",
+          "hash": "0304ab43c78c7f23b7a5195cb417bfef6823a0adfe6e113a2362ce735fe80f29"
+        },
+        {
+          "id": "3f57dc1f-8f73-414b-ac7c-28390881d020",
+          "hash": "87a7b6e8f3b595346271d43a916edca054d3eff57f68c6139307f8c14c9011e7"
+        },
+        {
+          "id": "bb266c1d-e96b-4fa1-bb87-cb4b76374aa8",
+          "hash": "8195eeaee4b1e41f5a4e9b27647ab59963c1be890fd78673d6c82668b9f46491"
+        },
+        {
+          "id": "1be7c9b6-5b1f-4d31-8ac8-f3c80d71de56",
+          "hash": "fc378a40cb275e0f51d040040e6e8d1dd362b103278b92f1d549cbdcbaeabc08"
+        },
+        {
+          "id": "84a91ed1-2c67-427c-8273-37640c4b4f6e",
+          "hash": "916d169fe1941eb5543f0daf76e06b39467a8fbfc09f5e6bc334f79334c5888b"
+        },
+        {
+          "id": "cb496256-8efc-4912-b646-47552a8c3197",
+          "hash": "a0a373be996822292884c1db4b29c7860689ab7508096175e6a3e902919778f8"
+        },
+        {
+          "id": "5a1e1664-7092-45e5-b9db-938f9be49db0",
+          "hash": "9b13b2e90543f847b67b0a195406f8bd9598e14d3887def568454cbf33d35e25"
+        },
+        {
+          "id": "cdc50017-6e9d-4b49-aaf7-85e2c0db8d9c",
+          "hash": "a36b5fea8ec81adeb451559d9e8ef7c53e4f537814420d3ed40617a1d949a99e"
+        },
+        {
+          "id": "0753d46d-ea94-4fd6-8d97-8b29a3208cd1",
+          "hash": "66b5ab0a858dbe17d7b2e003b2f3ead899c9e30d6da43fcce64382407c489d3b"
+        },
+        {
+          "id": "882e7a18-c234-4d4d-bda6-80f02473eb41",
+          "hash": "1a853dafacf426cff4ce4efc74c274479df155c56a1b6c5222533cbfee802ba7"
+        },
+        {
+          "id": "8a84eb5a-b8df-4c72-a073-a260220f4e7c",
+          "hash": "a2561fdd1f4dbd707b88d5530a11603e8baf2042d8c364591603425904efee69"
+        },
+        {
+          "id": "ae5dbb70-fcf7-4528-962c-921885b55030",
+          "hash": "dad44bdd28903503b3f9e5aef09b630387abfab6c423da42e20912aaca3d591c"
+        },
+        {
+          "id": "dc678827-0ccf-446b-8138-2f5a64a15496",
+          "hash": "846da0717efe48fa073727e5f895e2f262eb9bd3e9cffbb112b424b330a6cd5c"
+        },
+        {
+          "id": "7765e535-b1e9-4cec-adb5-37d9f32535b7",
+          "hash": "b31fd1148ee0b7c4b737217a5d8c2209f0026e56a0dd8888f92fd437d96e086a"
+        },
+        {
+          "id": "961a8a76-7d8e-4863-987b-42771402fb0a",
+          "hash": "9d9d81de1bc90d3d1f8fa5e6864bb4668623644aa4d6c0f38546bfa9ea8e1e01"
+        },
+        {
+          "id": "bcb54fb6-e7af-4208-ba2f-0926336e35ac",
+          "hash": "0be8c8d94f5dc2d192852b18954b1ee9e577d6bbef0ef5c1e709e450ed5ccec2"
+        },
+        {
+          "id": "8ef46525-c6bb-44aa-aa3f-c84aa93c4b80",
+          "hash": "64ce40b4f6514473110e3676f78999c992a2a1dabcd062538770054a27d40e05"
+        },
+        {
+          "id": "cbd3488e-bada-407b-a074-361ca4d12f6f",
+          "hash": "126ee68033de7f4ac74aa0fc26008cb5a21cd1caecdc90d3e2c02fd1a71888f7"
+        },
+        {
+          "id": "370c01fb-2361-44b7-b425-13eb7bc621ce",
+          "hash": "98c615f4b461b2d14cb2e15334411c50b5f744164858f98e973ff13ac6476b99"
+        },
+        {
+          "id": "3049b939-6a27-42f9-b433-96e1219a83e7",
+          "hash": "5718916deae33dfe183b1ab4b5702272197aca99549d2ed942ba138020520798"
+        },
+        {
+          "id": "681020a0-afdb-4f07-b4b4-b607235185b6",
+          "hash": "ac7ebd1f1bd307f5e5a54179509f5eaf2aa96a609c8a10020ab0eacc30b94d32"
+        },
+        {
+          "id": "f8c0d92e-3af8-4264-967f-529dcd533d6e",
+          "hash": "8088181e67bb334960eef8962dafc5bb7cf3fde763a0e14404a431a80ac670cf"
+        },
+        {
+          "id": "8e615bef-c602-406c-b93f-29e12b9a8cdb",
+          "hash": "831b28135df784f7f0d37671a037725b76ada6c03baab6beb3e713499badc87c"
+        },
+        {
+          "id": "82b5a2a3-98ad-4d27-8578-512b7e836f27",
+          "hash": "3615d52a89639f25aefa309905c167087ed4c72597649b0ad9f3fe949c96a59b"
+        },
+        {
+          "id": "4f88e588-79cc-4f73-9822-1d5bd2a9ceb8",
+          "hash": "41bc964e1e6e89a7e1f6d227375ccd3213b337dc7b4221d7cd5c7d6a91f0f6c9"
+        },
+        {
+          "id": "3272c2f3-1b01-45bc-aaaf-ffe2b9cfe640",
+          "hash": "7c46df85f7f377aacde0d6dc60926cc42afd68308d54b0c70666c35b7468e8f1"
+        },
+        {
+          "id": "5100d453-0af1-4e71-9bbb-416ec874b4ce",
+          "hash": "4a50cadd3684cf371043ab39ac492653d1bb0180a461878b9aea84eca086b999"
+        },
+        {
+          "id": "df5bd511-5e86-482a-a742-d06e1d14272c",
+          "hash": "78514a6cd7be42da0c73eacf4cb141fa30921aec4f700fc98af1c54eb8a8d41f"
+        },
+        {
+          "id": "6259e7fd-d076-43aa-beae-e174f76507ba",
+          "hash": "98c418ffc7f7f5d4b16bb591e452616a6d4f6b45f0f4dd414349ca842bc949c4"
+        },
+        {
+          "id": "af0e1a01-fcdb-473b-bea4-0c0b9bb67375",
+          "hash": "3223c1b55b4042d6a3fe39f830e0784f953663284d526ff1171828ae90b6a39a"
+        },
+        {
+          "id": "73824647-80a2-4c71-b13e-959ba1ec3461",
+          "hash": "05552e88d60f042e76ce475113ea17ca46167e3811e31f1fe0760c431e439a38"
+        }
+      ]
+    },
+    {
+      "page_id": "page_6dfa06bd527c8191b010802445f7170e",
+      "file": "exploration.md",
+      "title": "Mini-SLA 想法与探索",
+      "source_url": "https://chatgpt.com/space/page_6dfa06bd527c8191b010802445f7170e",
+      "source_updated_at": "2026-10-12T10:17:05.728313Z",
+      "source_sequence": 0,
+      "block_count": 12,
+      "kind": "exploration_not_adopted",
+      "source_characters": 1437,
+      "source_utf8_bytes": 2976,
+      "source_markdown_sha256": "ded4dfc909efed28ebeb1b2303c55f26e73c3375034959ca1c94f8f6214b8381",
+      "imported_body_sha256": "2ea7e5f3d03f27bd9ae169a4762cdc89b1b5e15bf2fdc4e21d663789c7d7e26d",
+      "fenced_code_blocks": 0,
+      "localized_page_references": {
+        "https://chatgpt.com/space/page_4df769bdb30c8191aa5ecd611fdd1870": 1,
+        "https://chatgpt.com/space/page_466c7cc880848191868fee59d5e652f0": 1
+      },
+      "source_block_hashes": [
+        {
+          "id": "b9bce256-4b35-4e96-9c1b-0afd43cc7b6a",
+          "hash": "638d968b3d6910624fa6acffe81c129ac9ad0747bdd0389728769750244c2f5a"
+        },
+        {
+          "id": "d0ef32a7-2a0a-41d0-850c-66af691b7be5",
+          "hash": "cc7f766cc1ad0280ac3aa8d658b4097464dcb168b6bfbffea2f78cdb5f1e1b17"
+        },
+        {
+          "id": "4e27e2e6-e1d4-4d9a-a640-a783eaf38a9a",
+          "hash": "b68d2ad2a9b07e902a0c01a8cf8a605cc7618f7bd0c6582d5e1430067dfeef95"
+        },
+        {
+          "id": "49feabcc-0018-4a30-b9b2-7205e0af807e",
+          "hash": "21871dd522662cdff813f6e76d3aa1aae76afda7cb077ae4869349022a2d05c0"
+        },
+        {
+          "id": "4e008016-d330-423e-af0b-062fbb648133",
+          "hash": "91e652f3393d73593d6804fac56b5a3e182e8b3a713e5598b48c132bb08e63aa"
+        },
+        {
+          "id": "a509a8aa-7a71-4571-b73d-5bc199f4b11e",
+          "hash": "f91cf797ffa9504ad49e7e3da9eb1a9df0fd32b11e33a2da82b11cfcba0e19f5"
+        },
+        {
+          "id": "b440a10a-e1f0-4a97-af87-c4b84ca18168",
+          "hash": "0072f4019fda5a88e6ad388143688401f9b6617cea8ff932061bb43e09b56ae6"
+        },
+        {
+          "id": "140c1ca8-627b-452a-be1c-ae4c799de490",
+          "hash": "8d95364246b15c87df6070e3836491888f3236bab1c50f6f017b9a712a07b01f"
+        },
+        {
+          "id": "382dbaed-654e-4328-b84e-88d892034b05",
+          "hash": "add8417c876d9ad1490b9f9f518a6585fa0f6b05d0d59083e596a6ce39275163"
+        },
+        {
+          "id": "784a908b-20d0-4f7a-969a-c8460d39ec6e",
+          "hash": "2c6cb428c626db97fca72da4ac996e5f0b7b66186ff33a68c7560207ef5384ce"
+        },
+        {
+          "id": "bb6dd75f-75c0-45d5-95c8-bb88d27c7e89",
+          "hash": "549de41c5ff54ae338ab52ee503ced5252bbc835b50d17aff1daacfcc6e9e908"
+        },
+        {
+          "id": "e6a72d96-44e4-4c1d-8d00-efeed627a46c",
+          "hash": "7ae8e261ed9b2ebec9c16b34657d1e15a86027d20e4b097f4ebf399d63beeb86"
+        }
+      ]
+    }
+  ]
+}
