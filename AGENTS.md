@@ -1,9 +1,8 @@
-# 工作入口
+# 常驻开发规则
 
-- 先读 [README.md](README.md)；模块与设计见 [scope](docs/scope.md)，依赖维护见 [development](docs/development.md)。当前是开发骨架，M0 协议待实现。
-- 环境：`python scripts/dev.py bootstrap`；验证：`python scripts/dev.py check`；演示：`python scripts/dev.py demo`。
-- 代码位于 `src/mini_sla_harness/`，离线测试位于 `tests/`，开发入口位于 `scripts/dev.py`。
-- 保持标准库优先；开发依赖锁在 `requirements-dev.lock`，运行产物写入忽略的 `artifacts/`。
-- 保持 demo 确定性；不读凭据，不接真实 API，不把 fake 输出当作研究效果。
-- 修改后运行 check 和 demo；新行为用有意义的离线测试验证。
-- 使用独立分支、阶段提交，提交消息用简体中文 Conventional Commits。无远端操作授权时只提交本地。
+- 从 [README](README.md) 进入；按任务阅读 [架构](docs/architecture.md)、[测试](docs/testing.md) 或 [依赖维护](docs/development.md)，不复制其细节。
+- 本仓库按 [设计范围](docs/scope.md) 推进；保持 fake 确定性，不读凭据或接真实模型 API，不把基础设施检查写成 M0 协议验收。
+- 保留用户文件与修改。使用独立分支、阶段提交，提交消息用简体中文 Conventional Commits；未获授权不执行远端操作。
+- 标准库优先；第三方工具纳入 `requirements-dev.lock`。生成物进入忽略的 `artifacts/` 或 `dist/`。
+- 新行为验证实际输出和副作用；仓库约束要有破坏规则会失败的负例。修改后执行 README 的完整 check 和 demo。
+- 事实放在负责该主题的文档，其他位置链接过去。决策说明只记录真实取舍；不为机械修改新建流程或决策文档。

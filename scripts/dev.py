@@ -70,6 +70,7 @@ def check() -> None:
     run([str(PYTHON), "-m", "ruff", "format", "--check", "."])
     run([str(PYTHON), "-m", "ruff", "check", "."])
     run([str(PYTHON), "-m", "mypy"])
+    run([str(PYTHON), "scripts/repo_check.py"])
     run([str(PYTHON), "-m", "unittest", "discover", "-s", "tests", "-v"])
     run([str(PYTHON), "-m", "pip", "--isolated", "check"])
 
