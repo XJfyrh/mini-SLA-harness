@@ -1,5 +1,7 @@
 # mini-sla-harness
 
+Windows 项目位置：`E:\dev\mini-SLA-harness`。
+
 Mini-SLA 的初始 Python CLI 开发仓库，当前交付开发环境及离线 smoke demo。
 完整 Harness 尚未实现，设计 M0 的协议验收也尚未完成。
 
@@ -7,6 +9,7 @@ Mini-SLA 的初始 Python CLI 开发仓库，当前交付开发环境及离线 s
 在项目根目录运行：
 
 ```powershell
+Set-Location -LiteralPath 'E:\dev\mini-SLA-harness'
 python scripts/dev.py bootstrap
 python scripts/dev.py check
 python scripts/dev.py demo
