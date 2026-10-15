@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "task_id": "jsonl-offline-protocol",
+  "editable_files": ["src/processor.py"],
+  "metric": "end_to_end_records_per_second",
+  "min_improvement_bps": 100,
+  "evaluation_spec_hash": "offline-search-fake-v1",
+  "audit_spec_hash": "offline-final-audit-fake-v1"
+}

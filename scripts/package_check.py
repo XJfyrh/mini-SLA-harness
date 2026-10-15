@@ -208,6 +208,32 @@ def accept_wheel(root: Path, recording: Evidence) -> dict[str, object]:
             rows_from_disk(database) == conflicting_rows, "Conflict handling changed existing data"
         )
         require(result_path.read_bytes() == original_json, "Failed demo rewrote JSON")
+        m0_directory = outside / "m0-acceptance"
+        m0 = invoke(
+            "m0-acceptance",
+            [str(cli), "m0-check", "--output-dir", str(m0_directory), "--json"],
+            outside,
+        )
+        m0_report = json.loads(m0.stdout)
+        require(m0_report["status"] == "passed", "Installed M0 acceptance failed")
+        require(len(m0_report["scenarios"]) == 10, "Installed M0 scenario set incomplete")
+        m0_report_bytes = (m0_directory / "report.json").read_bytes()
+        require(json.loads(m0_report_bytes) == m0_report, "Installed M0 stdout/file mismatch")
+        m0_database = m0_directory / "unknown-scope-accounting" / "state.sqlite3"
+        with closing(sqlite3.connect(f"{m0_database.as_uri()}?mode=ro", uri=True)) as reader:
+            m0_budget = reader.execute("SELECT confirmed,held FROM runs").fetchone()
+        require(m0_budget == (1150, 0), "Installed M0 budget did not persist")
+        invoke(
+            "m0-existing-output",
+            [str(cli), "m0-check", "--output-dir", str(m0_directory)],
+            outside,
+            1,
+        )
+        require(
+            (m0_directory / "report.json").read_bytes() == m0_report_bytes,
+            "Repeated M0 command overwrote evidence",
+        )
+        (evidence / "m0-result.json").write_bytes(m0_report_bytes)
         for label in ("unknown-command", "invalid-output", "database-conflict"):
             require(
                 "Traceback" not in (evidence / f"{label}.log").read_text(encoding="utf-8"),
@@ -227,6 +253,8 @@ def accept_wheel(root: Path, recording: Evidence) -> dict[str, object]:
             "demo_json_sha256": hashlib.sha256(original_json).hexdigest(),
             "restart_read_passed": True,
             "source_import_excluded": True,
+            "m0_scenarios": len(m0_report["scenarios"]),
+            "m0_budget_row": m0_budget,
             "failure_exits": {"unknown-command": 2, "invalid-output": 1, "database-conflict": 1},
         }
     require(not workspace.exists(), "Temporary installed environment was not cleaned up")

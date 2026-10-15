@@ -2,15 +2,17 @@
 
 ## 当前边界
 
-当前交付是可安装的 Python CLI、固定 fake provider 与 SQLite smoke 流程，以及开发环境和验证工具。固定响应没有模型调用、候选优化或性能评分；`research_effect: not_evaluated` 表示未评估研究效果。当前运行行为见 [架构](architecture.md)。
+当前交付包含可安装的 Python CLI、原有 SQLite smoke 流程，以及 M0 离线协议内核：JSON TaskSpec、候选 CAS、权威 StateStore、命令幂等与事务、Run/Trial/Advisor scope、逐调用预留/UNKNOWN、controller/attempt fencing、强停线性化、基线与规划状态。`m0-check` 驱动固定 Agent/Evaluator/provider，生成逐场景 JSON 和可回读数据库；入口见 [测试](testing.md#m0-离线协议验收)。当前运行行为见 [架构](architecture.md)。
+
+M0 使用假分数与模拟 token 用量，外部模型请求为零；`research_effect: not_evaluated` 表示未评估研究效果。跨进程排他、进程死亡后的事务结果和受控假进程终止已有行为测试；容器隔离、Windows 控制管道和断电持久性分别保留为待验收。
 
 ## 后续设计
 
 首版平台采用 Windows 宿主 + Docker Desktop/WSL2 Linux 容器：宿主负责 CLI、控制器、SQLite、权威候选快照和可信评估 supervisor，容器执行工具与候选。具体边界由 [总体架构](design/02-architecture.md#1-架构决策与运行边界) 负责；原生 Windows 候选执行和其他宿主部署不在首版内。
 
-TaskSpec、权威 StateStore、不可变候选快照、独立可信评估、预算预留与 UNKNOWN 对账、controller/attempt fencing、强停竞态、暂停/恢复、Advisor 规划、Workers 并发、最终审计与消融实验仍待实现。当前 demo 表不是正式 StateStore schema。
+M1 的真实编辑—评估链路、ContextBuilder、模型适配器与目标执行器，M2 的完整生命周期/崩溃矩阵，M3 的真实 Advisor 与 Worker 调度并发，以及 M4 的审计与消融实验仍待实现。M0 的状态测试不替代这些运行时能力；原有 demo 表仍不属于 StateStore schema。
 
-下一步同时取得 Windows 宿主与 Docker Desktop/WSL2 环境、provider 契约和最小编辑—评估链路的真实反馈，并实现 M0 协议测试。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。Windows 控制与产物发布、Linux 容器隔离、可信计时、并发和模型效果分别需要实际验收记录。
+下一步取得 Docker Desktop/WSL2 执行边界、provider 契约和最小编辑—评估链路的真实反馈。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。默认开发解释器与隔离目标解释器的 SQLite 结果分别记录在 [验证记录](verification.md)，不把单个解释器通过扩展为整机已升级。
 
 ## 设计文档
 

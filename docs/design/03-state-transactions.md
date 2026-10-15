@@ -28,7 +28,7 @@ Baseline Candidate 的 parent、origin_trial_id 可为空，request_key 固定�
 
 | 实体 | 关键字段 | 约束或用途 |
 | --- | --- | --- |
-| runs | id、status、resume_phase、stop_mode（NONE/DRAIN/FORCE）、completion_reason、baseline_evaluation_id、evaluation_spec_hash、audit_spec_hash、min_improvement_bps、best_candidate_id / best_evaluation_id / best_score_i、version | best 三字段同时为空或同时非空；version 随研究状态事务递增。 |
+| runs | id、status、resume_phase、stop_mode（NONE/DRAIN/FORCE）、completion_reason、baseline_evaluation_id、evaluation_spec_hash、audit_spec_hash、min_improvement_bps、best_candidate_id / best_evaluation_id / best_score_i、version、evidence_version | best 三字段同时为空或同时非空；version 随实际状态写入递增，evidence_version 标识规划依据。 |
 | runs（控制/预算） | controller_generation、budget_limit、confirmed_tokens、held_tokens、accounting_state | 额度均非负；研究结束与费用对账完成分别表示。 |
 | epochs | run_id、epoch_no、status、snapshot_version、snapshot_event_seq、context_hash、plan_hash、advisor_invocation_id | UNIQUE(run_id, epoch_no)；记录 Advisor 实际看到的证据快照。 |
 | assignments | epoch_id、worker_slot、branch_id、mode、spec_hash、max_trials、trials_created、status、end_reason | UNIQUE(epoch_id, worker_slot)；同 Epoch 的 Branch 不重复分配；默认 max_trials=3。 |
@@ -95,7 +95,11 @@ PAUSING 禁止新 Trial、领取 PENDING 和新 Advisor 请求；当前 Trial �
 
 ## 4 命令幂等性与事务前置条件
 
-公共命令信封包含 schema_version、command_id、type、run_id、payload；仅依赖快照的规划操作在 payload 中携带 expected_version。数据库 receipt 可将 type 存为 command_type。request_hash 使用规范化 JSON 计算，不包含每次重试都会变化的发送时间。业务错误返回明确错误码，不能使用可能被 Python 优化关闭的 assert 承担生产校验。
+公共命令信封包含 schema_version、command_id、type、run_id、payload；OpenEpoch 在 payload 中携带 expected_version，绑定 ContextBuilder 的证据版本。CommitPlan 使用已保存 Epoch 的 snapshot_version 复查当前证据版本，调用方不能改写该绑定。数据库 receipt 可将 type 存为 command_type。request_hash 使用规范化 JSON 计算，不包含每次重试都会变化的发送时间。业务错误返回明确错误码，不能使用可能被 Python 优化关闭的 assert 承担生产校验。
+
+version 记录状态修订，evidence_version 记录会使研究计划失效的证据修订；基线初始化、计划提交、Trial 创建和结果 finalize 推进证据版本。租约、预算、暂停和恢复只改变状态版本，使已接受计划不会因自身控制过程被迫重调模型。OpenEpoch 的 expected_version 与 context 内 snapshot_version、task_spec_hash 同时校验；正式 ContextBuilder 在一个读取事务内取得这些身份。
+
+预算或重试耗尽需要终结作用域时，错误码、终态和 receipt 同事务提交，提交后向调用方返回该错误；同一命令重放仍返回同一错误。普通非法输入或冲突回滚，不留下部分实体。DISPATCH_INTENT 的 receipt 只确认已有发送意图，不是重新发送许可；重开后未知请求保留原预留，真实重发使用新 call_id。
 
 ```text
 BEGIN IMMEDIATE;
@@ -227,7 +231,7 @@ manifest 路径统一使用 `/` 分隔的相对路径；宿主接收和容器物
 
 Checkpoint 是可恢复的 DB 快照及其引用产物集合：使用 SQLite backup API 创建一致快照，再解析该快照的全部对象引用，复制/验证 CAS 对象并生成备份 manifest。禁止仅复制运行中的 main.db 而遗漏 WAL；WAL checkpoint 本身不等于 Run 备份。SQLite 和 fsync 的持久性仍依赖底层文件系统的实际保证。
 
-Advisor 证据在短读事务获取 run.version／event_seq，生成不可变 context。OpenEpoch／invocation 绑定 context_hash、prompt_version、model_config_hash。响应 artifact 先落盘，RecordAdvisorResponse 再以当前 attempt 写 response_hash/plan_hash 与 PLAN_RECEIVED；CommitPlan 后 invocation COMMITTED、Epoch READY、Assignment／Branch 与事件同事务提交。崩溃若只有响应文件而无 DB 引用，文件只是 orphan，不能自动当成有效计划。格式修复与重规划不得覆盖旧响应证据。
+Advisor 证据在短读事务获取 run.version／evidence_version／event_seq，生成不可变 context；Epoch.snapshot_version 绑定 evidence_version。OpenEpoch／invocation 绑定 context_hash、prompt_version、model_config_hash。响应 artifact 先落盘，RecordAdvisorResponse 再以当前 attempt 写 response_hash/plan_hash 与 PLAN_RECEIVED；CommitPlan 后 invocation COMMITTED、Epoch READY、Assignment／Branch 与事件同事务提交。崩溃若只有响应文件而无 DB 引用，文件只是 orphan，不能自动当成有效计划。格式修复与重规划不得覆盖旧响应证据。
 
 ## 9 故障恢复矩阵
 

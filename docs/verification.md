@@ -44,3 +44,16 @@
 2026-10-15，分支 `XJfyrh/windows-host-scope`：首版平台修订为 Windows 宿主 + Docker Desktop/WSL2 Linux 容器，职责见 [设计范围](scope.md)。`python scripts/dev.py doctor --target` 实测 Windows 平台检查通过，SQLite WAL 写入、重开读取与完整性检查通过；宿主 SQLite 3.50.4 未满足 WAL-reset 修复版本要求，因此目标前置检查仍未通过。证据位于 `artifacts/verification/doctor-20261015T104108.125531Z-89b5fb18/summary.json`。
 
 下一步是在 Windows 宿主选择含修复的 Python/SQLite 组合，重跑 `doctor --target`，再逐项执行 [早期环境与集成探针](design/04-implementation-validation.md)。Docker Desktop/WSL2 后端、Windows 控制管道、目标容器隔离、产物发布与性能校准均待验收；当前尚未运行真实模型。
+
+## M0 离线协议内核
+
+2026-10-15，`main`：新增正式 StateStore、候选 CAS、TaskSpec 与 M0 验收入口，当前能力与剩余阶段见 [设计范围](scope.md)。`python scripts/dev.py m0-check` 的 10 组离线场景通过，原始报告位于 `artifacts/verification/m0-20261015T112924.702672Z-721739c5/`；外部模型请求为零，分数与 token 用量均为 fake。
+
+系统 Python 和项目 `.venv` 保持原样（3.14.7／SQLite 3.50.4）。另在忽略的 `artifacts/runtime/python-3.14.8/` 准备隔离 CPython，并将该目录的 SQLite DLL 替换为官方 3.54.0，原 DLL 保留备份；没有替换系统文件或注册解释器。该组合的 WAL 写入、重开、完整性及 `doctor --target` 全部通过，记录位于 `artifacts/verification/doctor-20261015T111947.724484Z-c548b892/`；这证明宿主基础前提，不证明 Docker 执行边界。
+
+下载来源及校验：
+
+- [CPython 3.14.8 Windows x64 embeddable](https://www.python.org/downloads/release/python-3148/)：SHA-256 `a93abe456ab01bd96d7a085b3cdb6566b3063f4241360d114142fbdb07f0a310`。原包仍含 SQLite 3.50.4，不能仅靠 Python 版本号判断修复。
+- [SQLite 3.54.0 Windows x64 DLL](https://www.sqlite.org/download.html)：归档名 `sqlite-dll-win-x64-3540000.zip`，SHA3-256 `f5fb500c73a3afd89976386bb8e4fdc8b5b65c052e187fb1ada1f5de034cd45b`。
+
+隔离解释器的 `python314._pth` 显式加入本仓库根目录与 src，供本地源码测试；这与干净 wheel 安装验收是两条独立路径。工作依据日志在 `artifacts/audit/m0.tsv`，最终所选检查的源码指纹、日志与退出码由本次 `artifacts/verification/` 报告记录。

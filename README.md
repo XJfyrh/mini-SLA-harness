@@ -1,8 +1,8 @@
 # mini-sla-harness
 
-Mini-SLA Harness 探索如何让无状态 Agent 围绕可验证任务持续改进程序。当前版本提供一个可重复运行的本地开发起点：Python CLI、确定性 fake provider、SQLite 持久化和离线 smoke demo。
+Mini-SLA Harness 探索如何让无状态 Agent 围绕可验证任务持续改进程序。当前提供 M0 离线协议内核：任务校验、不可变候选、SQLite 权威状态、预算账本与执行代次，以及可重复的 fake 验收。
 
-项目处于初始骨架阶段，完整优化循环尚未实现。首版目标为 Windows 宿主 + Docker Desktop/WSL2 Linux 容器，职责与实现进度见 [设计范围](docs/scope.md)；以下离线 demo 无需 Docker。
+完整优化循环尚未实现。首版目标为 Windows 宿主 + Docker Desktop/WSL2 Linux 容器，职责与实现进度见 [设计范围](docs/scope.md)；以下离线流程无需 Docker、模型账号或付费额度。
 
 ## 先跑一个 Demo
 
@@ -18,6 +18,23 @@ python scripts/dev.py demo
 
 - `artifacts/demo/demo.sqlite3`
 - `artifacts/demo/result.json`
+
+## 验收 M0
+
+```powershell
+python scripts/dev.py m0-check
+python scripts/dev.py check
+```
+
+第一条执行 10 组离线协议场景，并打印独立证据目录；成功显示 `M0 offline acceptance: passed`。`acceptance/report.json` 给出逐场景结果、观测值和 SQLite 路径，覆盖预算竞争、UNKNOWN 对账、旧执行权拒绝、强停竞态及基线/规划重开。第二条验证代码、测试和干净 wheel 安装。详细断言与查看方法见 [M0 验收](docs/testing.md#m0-离线协议验收)。
+
+任务契约使用 JSON，可单独校验公开示例：
+
+```powershell
+.\.venv\Scripts\mini-sla.exe task validate tasks/jsonl/task.json
+```
+
+fake 分数和 token 用量验证协议；真实模型效果、容器隔离和性能测量按后续阶段验收。
 
 ## 接下来
 

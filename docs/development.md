@@ -18,6 +18,8 @@ python scripts/dev.py package-check
 
 影响 demo 的调用方式、输出或持久化结果时，另运行 `python scripts/dev.py demo` 并读取实际产物。
 
+M0 协议开发先运行 `python scripts/dev.py m0-check`，查看逐场景结果和数据库，再执行完整 check；验收断言和输出位置由 [测试说明](testing.md#m0-离线协议验收) 负责。TaskSpec 当前使用 JSON，公开示例为 [task.json](../tasks/jsonl/task.json)。
+
 成功 wheel 留在 `dist/`；验收内容和证据格式由测试说明负责。Windows 直接使用 CLI 可运行：
 
 ```powershell

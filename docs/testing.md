@@ -1,12 +1,37 @@
 # 测试与仓库检查
 
-贡献者运行入口见 [开发指南](development.md)，完整顺序以 [dev.py](../scripts/dev.py) 为准。当前测试验证离线开发基础设施；协议验收范围见 [设计范围](scope.md)。
+贡献者运行入口见 [开发指南](development.md)，完整顺序以 [dev.py](../scripts/dev.py) 为准。当前覆盖离线开发基础设施和 M0 协议内核；后续协议验收范围见 [设计范围](scope.md)。
+
+## M0 离线协议验收
+
+```powershell
+python scripts/dev.py m0-check
+python scripts/dev.py check
+```
+
+`m0-check` 每次创建独立 `artifacts/verification/m0-*/`，成功输出 `M0 offline acceptance: passed`。入口无需模型账号、付费额度、私有数据或 Docker；fake 分数与 token 用量用于验证协议，实际文件、SQLite、线程竞争和受控子进程保留。当前开发解释器的 SQLite 版本和目标解释器探针分别报告，M0 通过不代表 Docker 或真实模型已验收。
+
+打开打印路径下的 `acceptance/report.json`：10 组场景均应为 passed，`external_model_requests=0`、`usage_kind=simulated_tokens`。每组列出需求编号、实际观测和数据库相对路径；同一输出目录禁止覆盖。安装后也可运行 `mini-sla m0-check --output-dir NEW_DIR --json`；默认不指定目录时生成新的目录。
+
+| 检查内容 | 应观察的结果 |
+| --- | --- |
+| 任务/候选 | 缺失字段拒绝；候选可按 hash 重建，损坏引用阻断恢复。 |
+| 局部保留与幂等 | 全局 90000，新分支依次 85000、83000、96000，head 为 85000、85000、96000；重复 finalize 不增加采纳事件。 |
+| 预算竞争 | 两个真实线程各预留 80、Run 余额 100，只有一个成功，held=80。 |
+| UNKNOWN 与 scope | 重开后未知预留保留；新 attempt 不重置额度；两次物理假请求合计 confirmed=1150、held=0，cached input 不重复累加。 |
+| 强停与执行权 | force/finalize 两种顺序分别保留原 Best 或已采纳 Best；DONE 证据保留；旧提交拒绝；受控假进程退出，迟到用量仍结算。 |
+| 基线/规划 | 初始化三个暂停位置与规划五个重开位置收敛到原 job/invocation；未接受响应不采纳；已接受响应恢复提交一次。 |
+| 整数评分 | bps=250、old=100000 时，102499 拒绝、102500 晋升；bps=0 仍至少提升 1。 |
+
+[test_protocol.py](../tests/test_protocol.py) 额外覆盖跨进程抢锁、六处直接终止进程、未提交事务回滚、错误角色/编辑范围、无效成绩、usage 冲突/超额、持久重试上限、计划原子回滚和未开始配额的跳过计数。离线场景禁止 socket 创建。既有 demo 测试继续保留。
+
+你可直接打开场景列出的 SQLite；例如 `unknown-scope-accounting/state.sqlite3` 的 runs 应为 confirmed=1150、held=0，逐调用明细在 model_calls/usage_ledger，scope 合计在 budget_scopes。正式 StateStore 与 `demo_records` 使用不同数据库；不要把 demo 结果当 M0 验收。
 
 ## 行为测试
 
 [test_smoke.py](../tests/test_smoke.py) 使用标准库 unittest，保留真实文件系统、SQLite 与 CLI 子进程，只固定 provider 边界。断言持久化内容、重新连接、重复运行、冲突回滚和退出码。fake/demo 测试禁止 socket 创建。
 
-测试各自拥有临时目录，关闭数据库连接并等待子进程退出后清理。超时、未预期退出或内容不一致均失败，不因环境问题自动跳过。真实模型、研究效果和其他操作系统尚未在这些测试中验证。
+测试各自拥有临时目录，关闭数据库连接并等待子进程退出后清理。超时、未预期退出或内容不一致均失败，不因环境问题自动跳过。真实模型、研究效果和 Docker/WSL2 执行边界尚未在这些测试中验证。
 
 ## 仓库规则
 
@@ -31,6 +56,8 @@
 错误路径要求未知命令退出 2、输出目标为已有文件和数据库冲突退出 1。已有文件、冲突数据与上一次 JSON 必须保持原样。每个子进程有 60 秒上限，任一步异常均失败；临时环境在退出时清理。
 
 成功 wheel 留在 `dist/`；SQLite 实际行值、导入位置和 wheel SHA-256 写入本次安装验收的 `summary.json`，正常 demo JSON 另存为 `demo-result.json`。当前验证平台由 [验证记录](verification.md) 负责。
+
+干净 wheel 验收还从独立工作目录执行完整 M0 CLI，回读 UNKNOWN 场景的实际预算行，并验证已有 M0 输出目录被拒绝且报告字节不变。结果另存为 `m0-result.json`；临时安装环境仍在检查结束时清理。
 
 ## 反馈与证据
 

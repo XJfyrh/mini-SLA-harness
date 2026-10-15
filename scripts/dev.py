@@ -83,7 +83,7 @@ def run_checks(evidence: Evidence, commands: list[tuple[str, list[str], float]])
                     command,
                     timeout=timeout,
                     environment=environment,
-                    echo=name in {"doctor", "demo"},
+                    echo=name in {"doctor", "demo", "m0"},
                 )
             except CommandFailure:
                 continue  # Independent checks still provide useful feedback.
@@ -126,7 +126,7 @@ def check() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["bootstrap", "check", "demo", "package-check", "doctor"]
+        "command", choices=["bootstrap", "check", "demo", "m0-check", "package-check", "doctor"]
     )
     parser.add_argument(
         "--target", action="store_true", help="Check Windows host prerequisites (doctor only)"
@@ -151,6 +151,25 @@ def main() -> int:
                 run([str(PYTHON), "scripts/package_check.py"])
             elif args.command == "doctor":
                 run([str(PYTHON), "scripts/doctor.py", *(["--target"] if args.target else [])])
+            elif args.command == "m0-check":
+                evidence = Evidence(ROOT, "m0")
+                return run_checks(
+                    evidence,
+                    [
+                        (
+                            "m0",
+                            [
+                                str(PYTHON),
+                                "-m",
+                                "mini_sla_harness",
+                                "m0-check",
+                                "--output-dir",
+                                str(evidence.directory / "acceptance"),
+                            ],
+                            120,
+                        )
+                    ],
+                )
             else:
                 evidence = Evidence(ROOT, "demo")
                 return run_checks(
