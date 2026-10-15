@@ -9,7 +9,7 @@ description: "软件开发、修复、审查和设计调整的作战手册。按
 
 ## 分类路由
 
-每次任务读 [尽早暴露错误](../principle-fail-early/SKILL.md) 和 [取得真实反馈](../principle-real-feedback/SKILL.md)。再按当前要做的决策选择下面的分类，在分类表中只读取命中触发条件的原则。
+每次任务读 [尽早暴露错误](../principle-fail-early/SKILL.md) 和 [取得真实反馈](../principle-real-feedback/SKILL.md)。再按当前要做的决策选择下面的分类，在分类表中只读取命中触发条件的原则或工作流技能。
 
 | 当前要做什么 | 从哪里选择原则 |
 | --- | --- |
@@ -17,9 +17,9 @@ description: "软件开发、修复、审查和设计调整的作战手册。按
 | 设计状态、接口、输入校验、恢复或并发 | [模型与边界](references/models-and-boundaries.md) |
 | 新增能力、重构、迁移或批量修改 | [实现与迁移](references/implementation-and-migration.md) |
 | 定位失败、修改测试或判断性能与评估结果 | [诊断与验证](references/diagnosis-and-verification.md) |
-| 等待用户、控制上下文、降低阅读成本或沉淀经验 | [协作与维护](references/collaboration-and-maintenance.md) |
+| 等待用户、交接与过程记录、控制上下文或沉淀经验 | [协作与维护](references/collaboration-and-maintenance.md) |
 
-任务可以跨类。先处理会阻断后续的判断，出现新的失败或设计问题时重新路由；不因为进入一类就加载该类全部原则。用户点名某条原则时直接读取它。交付时说明原则实际改变的决策和证据，不逐条汇报已读名称。
+任务可以跨类。先处理会阻断后续的判断，出现新的失败或设计问题时重新路由；不因为进入一类就加载该类全部内容。用户点名原则或技能时直接读取它。交付时说明实际改变的决策和证据，不逐条汇报已读名称。
 
 ## 推进任务
 

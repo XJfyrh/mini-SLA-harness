@@ -30,3 +30,9 @@
 | [Guard the Context Window](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-guard-the-context-window/SKILL.md) | [保留关键上下文](../../principle-context-discipline/SKILL.md) | 定向读取与可追溯摘要；任务是否委派遵循当前授权。 |
 | [Never Block on the Human](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-never-block-on-the-human/SKILL.md) | [主动推进可逆工作](../../principle-advance-work/SKILL.md) | 在已有范围内继续执行，把真实依赖与常规选择分开。 |
 | [Encode Lessons in Structure](https://github.com/cursor/plugins/blob/e5136d82418d2db3165ea1050d17577cd618cc05/pstack/skills/principle-encode-lessons-in-structure/SKILL.md) | [把规则变成检查](../../principle-encode-invariants/SKILL.md) | 机械规则进入结构或检查，需要判断的内容留为短原则。 |
+
+## 工作流技能
+
+| pstack 技能 | 手册技能 | 吸收与调整 |
+| --- | --- | --- |
+| [show-me-your-work](https://github.com/cursor/plugins/blob/ce649c03ac3b75b6ae80cbd15b7e2c536caedb5a/pstack/skills/show-me-your-work/SKILL.md) | [展示工作依据](../../show-me-your-work/SKILL.md) | 保留关键决策、证据、追加更正和交付前核对；增加会话标识，以标准库 Python 跨平台写入，日志引用已有验证产物，复核按任务需要和授权执行。 |

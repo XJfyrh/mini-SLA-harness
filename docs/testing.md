@@ -18,6 +18,8 @@
 
 [test_repo_check.py](../tests/test_repo_check.py) 在独立 fixture 中实际破坏链接、删除入口文件、修改 TOML 或重命名入口函数。技能检查覆盖相邻技能引用、参考文档及元数据；删除被引用技能或损坏 YAML 后命令非零退出，恢复后通过。
 
+[test_decision_log.py](../tests/test_decision_log.py) 从独立工作目录运行技能的 Python 日志脚本，读取实际 TSV 和原始字节，验证追加不改旧行、会话接手、失败与更正保留、UTF-8 与单行单元格。表头错误、损坏或截断、空字段与目录冲突均须非零退出，并保留已有内容。
+
 ## 安装制品验收
 
 [package_check.py](../scripts/package_check.py) 使用已有 pip/setuptools 构建 wheel，不新增构建管理器依赖。运行时只有标准库，干净安装可以直接暴露遗漏文件或开发环境依赖。

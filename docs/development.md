@@ -44,7 +44,7 @@ python scripts/dev.py package-check
 
 ## 作战手册
 
-[作战手册](../.agents/skills/playbook/SKILL.md) 连接 19 条独立短原则：两条常驻，其余按目标与方案、模型与边界、实现与迁移、诊断与验证、协作与维护五类路由。技能源文件位于 `.agents/skills/`，随代码一起提交；Codex 会从仓库目录发现这些技能，见 [官方说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。其他支持读取 Markdown 的 agent 可从 AGENTS.md 中的入口加载。
+[作战手册](../.agents/skills/playbook/SKILL.md) 连接 19 条独立短原则与按需工作流技能：两条原则常驻，其余按目标与方案、模型与边界、实现与迁移、诊断与验证、协作与维护五类路由。技能源文件位于 `.agents/skills/`，随代码一起提交；Codex 会从仓库目录发现这些技能，见 [官方说明](https://learn.chatgpt.com/docs/build-skills#where-codex-loads-local-skills)。其他支持读取 Markdown 的 agent 可从 AGENTS.md 中的入口加载。
 
 入口标识为 `playbook`，界面名称为“作战手册”；独立原则使用 `principle-*` 标识。手册维护通用开发方法，本仓库通过 AGENTS.md 接入以下具体约定：
 
@@ -55,15 +55,17 @@ python scripts/dev.py package-check
 | 环境与真实集成探针、性能校准 | 本页的环境检查、[实施与验收](design/04-implementation-validation.md) |
 | 修改后的验证与证据 | 本页的 check 和 demo、[测试说明](testing.md) |
 
-迁移到其他仓库时，一起复制 `playbook` 和 `principle-*` 目录，在目标仓库的 AGENTS.md 中连接手册入口及自己的开发约定。
+迁移到其他仓库时，一起复制 `playbook`、`principle-*` 和工作流技能目录（如 `show-me-your-work`），在目标仓库的 AGENTS.md 中连接手册入口及自己的开发约定。
 
 可以用 `$playbook 修复这个问题` 开始任务，也可以点名“先隔离共享状态”“解释测量结果”等原则。入口先匹配分类，再从分类表选择当前决策需要的原则；跨类任务按依赖顺序读取，遇到新问题重新路由。每条原则的 description 负责触发条件，正文负责执行方法。
 
 例如，排查恢复后重复结算，先读“修复根因”，再按观察进入“让重复执行收敛”和相关事务边界；比较性能收益时进入“解释测量结果”；只修改文档措辞时使用“降低阅读成本”。这些任务都先读两条核心原则。
 
+长时间自主执行、多阶段改造、交接或要求展示过程时，使用 [show-me-your-work](../.agents/skills/show-me-your-work/SKILL.md)，也可直接指定 `$show-me-your-work`。本仓库的主日志放在 `artifacts/audit/<任务>.tsv`，证据引用实际 `artifacts/verification/` 报告与日志；格式和辅助命令由该技能维护。
+
 迭代时，从一次实际失误或重复需求出发，修订能改变决策的最小规则。新增原则先检查是否与已有触发条件重叠，再挂到对应分类；分类负责选择，原则负责方法，项目文档负责命令与协议事实。可机械检查的约束优先放进现有检查入口，需要判断的部分保留短原则。
 
-修改技能后检查触发条件、名称和引用；新增技能使用项目 Python 加 `-X utf8` 运行 `skill-creator` 的 `quick_validate.py` 验证 frontmatter，再按本指南执行完整 check 和 demo。check 使用锁定的 PyYAML 解析技能元数据，检查入口、名称、description、正文及本地链接。对影响决策的修改，用对应真实任务观察实际动作和产物，记录失败后修订；格式通过和行为有效分别验证。
+修改技能后检查触发条件、名称和引用；新增技能使用项目 Python 加 `-X utf8` 运行 `skill-creator` 的 `quick_validate.py` 验证 frontmatter，再按本指南执行完整 check 和 demo。check 使用锁定的 PyYAML 解析技能元数据，检查入口、名称、description、正文及本地链接；技能中的 Python 脚本也参与格式、lint、类型检查，其行为由真实子进程测试验证。对影响决策的修改，用对应真实任务观察实际动作和产物，记录失败后修订；格式通过和行为有效分别验证。
 
 上游来源、合并关系与调整见 [pstack 吸收映射](../.agents/skills/playbook/references/pstack-map.md)。
 
