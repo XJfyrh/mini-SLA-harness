@@ -105,6 +105,16 @@ macOS/Linux 使用 `.venv/bin/python scripts/repo_check.py`。纯文字或技能
 
 ## 尽早检查环境
 
+Windows x64 的 `bootstrap` 同时准备仓库内固定运行时，也可单独执行：
+
+```powershell
+python scripts/dev.py runtime-bootstrap
+```
+
+[windows_runtime.py](../scripts/windows_runtime.py) 固定 CPython 3.14.8 x64 embeddable 与 SQLite 3.54.0 DLL 的官方归档和校验值：[Python SHA-256](https://www.python.org/downloads/release/python-3148/)、[SQLite SHA3-256](https://www.sqlite.org/download.html)。首次下载后校验再解压到忽略的 `artifacts/runtime/windows-python-3.14.8-sqlite-3.54.0/`；重复执行复用文件，版本锁或文件漂移时失败并保留现场。系统 Python、项目 `.venv` 和旧的手工运行时不替换。
+
+此运行时用显式 `._pth` 从仓库源码运行，包含根目录和 `src`，不加载用户 site 或 `PYTHONPATH`，不安装 pip；开发工具和干净 wheel 验收继续使用 `.venv`。当前固定发行包支持 Windows x64，Linux CI 使用自己的 Python 开发环境。Docker Desktop/WSL2 与镜像按后续真实探针固定。
+
 ```powershell
 python scripts/dev.py doctor
 python scripts/dev.py doctor --target

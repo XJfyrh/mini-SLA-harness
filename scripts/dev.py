@@ -69,6 +69,16 @@ def bootstrap() -> None:
         ]
     )
     run([str(PYTHON), "-m", "pip", "--isolated", "check"])
+    if os.name == "nt" and runtime_bootstrap() != 0:
+        raise RuntimeError("Pinned Windows runtime preparation failed; see its evidence report.")
+
+
+def runtime_bootstrap() -> int:
+    evidence = Evidence(ROOT, "runtime-bootstrap")
+    return run_checks(
+        evidence,
+        [("prepare", [sys.executable, "scripts/windows_runtime.py", "bootstrap"], 180)],
+    )
 
 
 def run_checks(evidence: Evidence, commands: list[tuple[str, list[str], float]]) -> int:
@@ -126,7 +136,16 @@ def check() -> int:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
-        "command", choices=["bootstrap", "check", "demo", "m0-check", "package-check", "doctor"]
+        "command",
+        choices=[
+            "bootstrap",
+            "runtime-bootstrap",
+            "check",
+            "demo",
+            "m0-check",
+            "package-check",
+            "doctor",
+        ],
     )
     parser.add_argument(
         "--target", action="store_true", help="Check Windows host prerequisites (doctor only)"
@@ -142,6 +161,8 @@ def main() -> int:
         tempfile.tempdir = None
         if args.command == "bootstrap":
             bootstrap()
+        elif args.command == "runtime-bootstrap":
+            return runtime_bootstrap()
         else:
             if not PYTHON.is_file():
                 raise RuntimeError("Run: python scripts/dev.py bootstrap")
