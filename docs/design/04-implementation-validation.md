@@ -12,20 +12,23 @@
 
 | 探索 | 启动条件 | 取得的实际证据与失败处理 |
 | --- | --- | --- |
-| 目标环境 | 在拟部署的 Linux 环境执行；先运行 `python scripts/dev.py doctor --target` | 记录 Python/SQLite 与镜像版本；实际验证 WAL 重开、Unix socket 访问权限、跨进程锁、子进程树终止、容器挂载/网络/资源限制和产物发布。每项保留命令与结果，缺失能力立即阻断依赖它的执行路径。 |
+| 宿主前置条件 | 在拟部署的 Windows 宿主执行 `python scripts/dev.py doctor --target` | 记录宿主 Python/SQLite；验证 WAL 重开。此命令检查基础前置条件，pending_runtime_probes 仍待单独验收，不代表容器环境就绪。 |
+| Docker Desktop/WSL2 与执行边界 | Windows 宿主连接本机 Docker Desktop 的 WSL2 Linux 后端，使用冻结镜像 | 记录 Docker Desktop、WSL2 内核、镜像 digest、资源与挂载配置；实际验证本地 named pipe 的身份/DACL/远程拒绝、跨进程锁、宿主进程树与容器分别终止、容器挂载/网络/资源限制、跨平台路径校验和 NTFS 产物发布。升级或后端重启后重跑受影响项；每项保留命令与结果，缺失能力立即阻断依赖它的执行路径。 |
 | Provider 契约 | 使用已授权的模型与额度；先固定请求数、最大输入/输出、超时、停止条件；首次单请求且关闭自动重试 | 保存请求 ID、完整模型标识、响应结构、usage、结束原因及错误分类；秘密字段不落日志。断线后的远端状态记为待对账，预算上限无法落实时明确采用经授权的 soft budget 探索。未知结果先调查，不自动补发。 |
 | 最小编辑—评估链路 | 公开小任务、临时工作区、一个候选；执行权限与目录范围已验证 | 从真实文件修改、实际构建/执行、可信父进程读取结果走通一次闭环；故意提供错误候选验证拒绝路径。模型生成候选时沿用 provider 探索额度。 |
 | 测量校准 | 最小 Evaluator 能运行参考实现与候选 | 执行 T-30，先判断测量能否识别目标变化，再增加搜索、Advisor 和并发。 |
 
 探针输出按 [测试说明](../testing.md) 保存源码与环境身份、命令、实际输出和结论。探针失败就修订对应假设或实现；不能把未知填成通过。开发工具保留真实文件系统、进程与数据库，fake 只控制需要重复触发的边界。
 
+Docker daemon 不可达、切换到 Windows container 模式或非 WSL2 后端，均不满足首版执行条件。故障探针须覆盖 Docker Desktop/WSL2 中断：保留宿主已提交事实，拒绝新的执行派发；后端恢复后按容器所有权标签和控制代次清理，再继续已有候选的评估。不得以杀死 docker CLI 代替容器退出确认。
+
 ### 1.2 产品交付 Gate
 
 | 阶段／依赖 | 可审查交付 | 离开阶段的 Gate |
 | --- | --- | --- |
 | M0 契约与安全闭环／无 | TaskSpec、fake Agent/Evaluator/provider、SQLite 与产物、Run/Trial/Advisor 预算 scope、逐调用预留/UNKNOWN、controller/attempt fencing、force 线性化、baseline/规划状态模型。 | 离线验证幂等、范围预算、旧代次拒绝、强停竞态；T-15～18、T-24～27 的最小协议测试通过。首次实现晋升即测试整数阈值边界。 |
-| M1 单 Worker 真实闭环／M0 | JSONL 可信 IPC 评估、fresh-process 测量、候选快照、ContextBuilder、一个真实 AgentAdapter、CLI。 | T-23、T-29 评分量化和 T-30 校准通过；持续自主调用前验证双层预算和声明的 hard-limit 能力；三个 Trial 新会话、无效候选无分数。首次实现审计接口时，用独立 fixture 验证 T-28 和 T-29 数据隔离。 |
-| M2 完整生命周期与恢复／M1 | pause/resume/stop、baseline CREATED 恢复、全故障注入、持久计数、对账与产物校验；沿用 M0 fencing。 | T-12～17、T-24～26 所有崩溃点通过；恢复不重不漏，未知费用不释放。 |
+| M1 单 Worker 真实闭环／M0 | Windows 宿主驱动 Linux 容器的 JSONL 可信 IPC 评估、fresh-process 测量、候选快照、ContextBuilder、一个真实 AgentAdapter、CLI。 | 1.1 的对应宿主与容器探针、T-23、T-29 评分量化和 T-30 校准通过；持续自主调用前验证双层预算和声明的 hard-limit 能力；三个 Trial 新会话、无效候选无分数。首次实现审计接口时，用独立 fixture 验证 T-28 和 T-29 数据隔离。 |
+| M2 完整生命周期与恢复／M1 | pause/resume/stop、baseline CREATED 恢复、全故障注入、持久计数、对账与产物校验；沿用 M0 fencing。 | T-12～17、T-24～26 所有崩溃点及 Docker Desktop/WSL2 中断探针通过；恢复不重不漏，未知费用不释放。 |
 | M3 Advisor 与并发／M2 | 真实 Advisor 结构化规划、持久响应/修复/重规划、3 槽位×3 Trial、Branch/Epoch 屏障。 | T-25 规划全状态与暂停/停止通过；同分支单活跃，跨分支并发与预算不超授，force 无迟到晋升。 |
 | M4 效果与消融／M3 | A/B/C/D、预算曲线、失败分层、重复运行、冻结最终候选和独立最终审计、可核验导出。 | 复跑 T-27～30；冻结后才使用本次最终 holdout。所有 Run 入报告，预算/计时口径一致，按实际结果报告是否改善。 |
 
@@ -123,6 +126,8 @@ A/B 比较会话生命周期，C/D 比较协调；跨这两对同时改变并行
 测量指标为 end_to_end_records_per_second，包含输入/输出 IPC 和编码，排除启动/import；计时前不向候选暴露本次输入。2 次独立进程/输入预热、5 次 fresh-process 单调用中位数、min_improvement_bps=100 是校准起点。T-30 后冻结采样次数、输入规模和 bps 到 evaluation_spec_hash；同一对照实验所有组使用相同配置、互异输入清单、独占槽与进程隔离。报告基线和最终候选的原始样本与分布。
 
 ### T-30 测量校准
+
+校准覆盖 Windows supervisor 到 Linux 候选的实际二进制 IPC 通道，包括 Docker/WSL2 传输；冻结宿主、后端、挂载与资源配置，检查同机 Worker 和宿主负载的影响。结果对应此环境的端到端吞吐量，不解释为 Windows 原生函数性能。
 
 在搜索前预先固定校准批次和判定目标，保存同一参考实现的重复测量分布；运行已知正确、故意错误、施加可控额外工作量的候选，检查正确性拒绝、稳定排序及对目标幅度变化的敏感度。另测最小有效工作量下的 IPC/编码占比，诊断信号是否被固定开销淹没，正式分数仍保留完整端到端耗时。
 

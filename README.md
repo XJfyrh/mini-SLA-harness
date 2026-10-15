@@ -2,7 +2,7 @@
 
 Mini-SLA Harness 探索如何让无状态 Agent 围绕可验证任务持续改进程序。当前版本提供一个可重复运行的本地开发起点：Python CLI、确定性 fake provider、SQLite 持久化和离线 smoke demo。
 
-项目处于初始骨架阶段，完整优化循环尚未实现。
+项目处于初始骨架阶段，完整优化循环尚未实现。首版目标为 Windows 宿主 + Docker Desktop/WSL2 Linux 容器，职责与实现进度见 [设计范围](docs/scope.md)；以下离线 demo 无需 Docker。
 
 ## 先跑一个 Demo
 

@@ -27,13 +27,15 @@
 | --- | --- | --- |
 | D-01 | Harness 持有状态，Agent 每个 Trial／Epoch 重建会话 | 使用 ContextBuilder，禁止以聊天历史作为权威当前状态。 |
 | D-02 | 局部与全局成果分离 | Branch 拥有局部候选；Worker 只是执行槽位。 |
-| D-03 | 单机 Python、SQLite、CLI、独立评估器 | 一个控制器写库，WAL 模式；无 Redis 或跨机器调度。 |
+| D-03 | Windows 宿主、Python、SQLite、CLI、独立评估器 | 一个宿主控制器写库，WAL 模式；Docker Desktop/WSL2 执行 Linux 容器，无跨机器调度。 |
 | D-04 | 三个 Worker，各方向连续尝试 | 建议上限 3 个槽位×每个 Assignment 3 次 Trial；参数可配置。 |
 | D-05 | 任务、交互与停止语义 | 固定 JSONL 语义、CLI 输出、Run 状态、排空及强制停止规则。 |
 | D-06 | 评估与准入阈值 | 从独立进程预热2次、fresh-process测量5次、整数bps=100开始校准；根据 T-30 的实际噪声与敏感度冻结配置。 |
 | D-07 | 尽早取得真实反馈 | 环境/provider/计量探针与 fake 协议测试并行推进；持续自主运行满足对应阶段 Gate。 |
 
 目标 MVP 包含 TaskAdapter、AgentAdapter、StateStore、ArtifactStore、ContextBuilder、AdvisorScheduler、WorkerRuntime、ProtectedEvaluator 与 Orchestrator，保留 Advisor 和最多三个并行 Worker。真实模型先支持一个提供方，使用小探针验证其实际契约；协议测试用 fake 重复触发事务、预算与 fencing 故障。单 Worker 闭环取得反馈后再增加恢复与并发能力。
+
+首版从 Windows 终端完成运行、观察、控制与导出；宿主和容器的职责、存储及通信边界由 [总体架构](02-architecture.md#1-架构决策与运行边界) 定义。原生 Windows 候选执行、Linux/macOS 宿主部署和远程 Docker daemon 留到后续；跨平台开发骨架检查不代表这些部署已验收。性能结论对应选定的 Docker Desktop/WSL2 环境。
 
 - 不做通用聊天助手、自然语言任意任务自动接入、多租户平台、网页后台或完整 REST 服务。
 
@@ -152,6 +154,6 @@ def aggregate(data: bytes) -> list[tuple[str, int, int, int]]:
 
 ## 8 默认决策
 
-本版选择单机 CLI、Python、SQLite WAL、一个控制器、三个可配置执行槽位、每 Assignment 最多三个 Trial，以及 pause／stop 排空当前 Trial。2 次独立进程预热、5 次 fresh-process 测量和 min_improvement_bps=100 为 T-30 的校准起点。
+本版选择 Windows 宿主 CLI、Python、SQLite WAL、一个控制器和 Docker Desktop/WSL2 Linux 容器，提供三个可配置执行槽位、每 Assignment 最多三个 Trial，以及 pause／stop 排空当前 Trial。2 次独立进程预热、5 次 fresh-process 测量和 min_improvement_bps=100 为 T-30 的校准起点。
 
 真实模型探针使用用户已配置的模型与额度；协议实现可先用 fake 和公开小样例推进。性能实验在环境与计量探针通过后，冻结模型适配器、预算、机器规格、数据和容器镜像。

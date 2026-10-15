@@ -129,7 +129,7 @@ def main() -> int:
         "command", choices=["bootstrap", "check", "demo", "package-check", "doctor"]
     )
     parser.add_argument(
-        "--target", action="store_true", help="Check Linux runtime prerequisites (doctor only)"
+        "--target", action="store_true", help="Check Windows host prerequisites (doctor only)"
     )
     args = parser.parse_args()
     if args.target and args.command != "doctor":

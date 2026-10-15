@@ -2,7 +2,7 @@
 
 [返回设计总览](00-overview.md)
 
-本文规定单机 MVP 的权威状态、事务接口与故障恢复协议。设计采用 Python asyncio、SQLite WAL 单写入者与不可变 Artifact Store；SLA 指 Stateless Language Agents。
+本文规定单机 MVP 的权威状态、事务接口与故障恢复协议。设计采用 Windows 宿主上的 Python asyncio、SQLite WAL 单写入者与不可变 Artifact Store，执行环境为 Docker Desktop/WSL2 Linux 容器，职责见 [运行边界](02-architecture.md#1-架构决策与运行边界)；SLA 指 Stateless Language Agents。
 
 ## 1 状态承诺与初始化
 
@@ -71,7 +71,7 @@ ON usage_ledger(call_id);
 
 候选与 Run 存在循环引用时，创建 Run 先不设置 best，再注册 baseline 并完成评估。SQLite 每个连接启用 foreign_keys=ON；采用 WAL、synchronous=FULL 与有限 busy_timeout。WAL 支持读写并发，但同时只有一个写入者且依赖本机存储；FULL 在提交时同步 WAL。[SQLite WAL](https://sqlite.org/wal.html) 单写入队列执行短事务，BEGIN IMMEDIATE 的争用须有界处理。[SQLite 事务](https://sqlite.org/lang_transaction.html) 数据库事务内禁止网络 await、模型调用和评估执行。
 
-目标环境探针先运行 `python scripts/dev.py doctor --target`，记录 Python 实际 sqlite_version；要求含官方 WAL-reset 修复的版本：3.51.3 及以后，或 3.44 分支的 3.44.6+、3.50 分支的 3.50.7+。[SQLite WAL-reset 修复](https://sqlite.org/wal.html#walresetbug) 版本不足时停止相关多连接写入/Checkpoint 验收，升级后重跑。Checkpoint 与写入由同一控制器协调。
+目标环境探针先在 Windows 宿主运行 `python scripts/dev.py doctor --target`，记录宿主 Python 实际 sqlite_version；要求含官方 WAL-reset 修复的版本：3.51.3 及以后，或 3.44 分支的 3.44.6+、3.50 分支的 3.50.7+。[SQLite WAL-reset 修复](https://sqlite.org/wal.html#walresetbug) 版本不足时停止相关多连接写入/Checkpoint 验收，升级后重跑；容器内的 SQLite 版本不能代替宿主检查。Checkpoint 与写入由同一控制器协调。
 
 ## 3 生命周期与调度屏障
 
@@ -188,7 +188,7 @@ Worker、Advisor、Evaluator 均有独立 owner、lease、attempt generation；�
 
 MVP 运行时用当前 controller 的单调时钟判断 lease；持久 wall-clock 时间仅用于审计。重启后不比较旧进程的单调 deadline：先取得本机 Run 级排他 OS 锁，再在事务中递增 controller_generation，使旧控制代次失去新调用和结果写入权限。第二个 controller 取不到锁就拒绝启动。此协议限定本机本地文件系统，不宣称多机协调。
 
-恢复只清理带匹配 run_id/controller_generation/attempt_id 标签的本 Harness 容器。MVP 不收养旧 Worker／Advisor／Evaluator 执行权；撤销后终止所属沙箱。DB 已接受候选继续同 job；已接受 Advisor 响应可验证并 CommitPlan，不必重调模型。尚未被 DB 接受的旧响应不能改变计划，可信 usage 仍须入账。
+恢复只清理带匹配 run_id/controller_generation/attempt_id 标签的本 Harness 容器，按 container ID 停止并确认容器及其子进程退出；宿主进程退出不作为容器停止证据。Docker Desktop/WSL2 重启后也按同一协议恢复，不自动收养遗留容器。后端不可达时保留待对账资源并阻断新执行。MVP 不收养旧 Worker／Advisor／Evaluator 执行权；撤销后终止所属沙箱。DB 已接受候选继续同 job；已接受 Advisor 响应可验证并 CommitPlan，不必重调模型。尚未被 DB 接受的旧响应不能改变计划，可信 usage 仍须入账。
 
 Fencing 不会撤销已经发往模型服务的请求，也不会自动停止旧进程。模型网关在每次 dispatch 前检查控制/attempt 代次，拒绝旧 Agent 发新请求；已发送的请求保留预算预留直到对账。评估重试同样必须验证 eval_generation，避免前一次慢执行迟到并覆盖后一次结果。
 
@@ -213,9 +213,11 @@ Fencing 不会撤销已经发往模型服务的请求，也不会自动停止旧
 
 MVP 以内容寻址 bundle 为候选代码权威产物，Git 可作导出用途。manifest 固定相对路径、字节 hash、size、可执行位与格式版本；去除 mtime/uid/gid 等非语义差异。拒绝路径逃逸、绝对路径、symlink/hardlink/device 等不受支持条目。完整 bundle 可独立重建工作区，避免依赖已经丢失的父 diff。
 
+manifest 路径统一使用 `/` 分隔的相对路径；宿主接收和容器物化均检查。拒绝 Windows 盘符/UNC、备用数据流、保留设备名、尾随点或空格、大小写冲突，以及 junction/reparse point 等会产生别名或越界的条目。可执行位是显式的 Linux 物化元数据，不从 NTFS 权限推导；仅容器工作区可写，权威 CAS 保存在宿主本地 NTFS。
+
 - 先停止 Worker 新的模型/工具行为，并等待或终止子进程，冻结工作区；不能在 Worker 继续写入时复制候选。
 
-- 写同一文件系统的临时 bundle，计算并复核 hash；fsync 文件后原子发布到 CAS，再 fsync 对象目录及新创建的必要父目录。
+- 写入宿主 CAS 同卷的临时 bundle，计算并复核 hash，刷新文件内容，再以不覆盖已有对象的原子操作发布；发布成功并可重开验证后才能提交数据库引用。Windows 文件刷新、目录项持久化与同卷发布须通过目标文件系统探针确认，不能直接套用 POSIX 目录 fsync。控制器崩溃后的恢复和断电持久性分别记录证据，未经验证的保证不作为已通过的 Gate。
 
 - 已存在相同 hash 时验证后复用，禁止覆盖不可变对象；只有发布完成后才提交数据库 Candidate 引用。
 

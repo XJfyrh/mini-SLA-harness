@@ -21,7 +21,7 @@
 
 ## 首版范围
 
-- Linux 单机、CLI、Python asyncio 与本地 SQLite WAL，由一个控制器写入权威状态。
+- Windows 单机宿主运行 CLI、Python asyncio 控制器与本地 SQLite WAL；工具和候选程序通过 Docker Desktop 的 WSL2 后端在 Linux 容器内执行。平台职责见 [运行边界](02-architecture.md#1-架构决策与运行边界)。
 
 - 1 个 Advisor，最多 3 个 Worker 槽位，每个 Assignment 最多 3 个逻辑 Trial。
 

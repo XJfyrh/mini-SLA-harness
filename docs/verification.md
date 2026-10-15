@@ -10,7 +10,7 @@
 | `skill-creator` 的 `quick_validate.py` | 7 个项目技能全部通过，使用项目 Python 的 UTF-8 模式 |
 | Codex app-server `skills/list` | 7 个项目技能均被发现并启用，项目加载错误为 0 |
 | `.venv/Scripts/python.exe -m mypy --platform linux` | Linux 类型分支检查通过 |
-| `python scripts/dev.py doctor --target` | 退出 1：目标要求 Linux，当前为 Windows；SQLite 3.50.4 未达到要求的 WAL-reset 修复版本 |
+| `python scripts/dev.py doctor --target`（平台修订前） | 退出 1：当时目标要求 Linux，当前为 Windows；SQLite 3.50.4 未达到要求的 WAL-reset 修复版本 |
 | Windows/Linux GitHub Actions | 已配置；尚未推送或执行云端工作流 |
 
 12 项反馈测试通过真实子进程、数据库和文件变更验证：
@@ -39,4 +39,8 @@
 
 每次执行输出对应的证据目录，`summary.json` 记录 HEAD 与开始/结束源码指纹；日志和结果格式见 [测试说明](testing.md)。历史记录只证明其记录的源码与环境，检查当前代码时重新运行 [开发入口](development.md)。
 
-目标运行环境的下一步是：在 Linux 上选择含 WAL-reset 修复的 Python/SQLite 组合，重跑 `doctor --target`，再逐项执行 [早期环境与集成探针](design/04-implementation-validation.md)。当前尚未运行真实模型、目标容器隔离或性能校准。
+## Windows 宿主首版平台
+
+2026-10-15，分支 `XJfyrh/windows-host-scope`：首版平台修订为 Windows 宿主 + Docker Desktop/WSL2 Linux 容器，职责见 [设计范围](scope.md)。`python scripts/dev.py doctor --target` 实测 Windows 平台检查通过，SQLite WAL 写入、重开读取与完整性检查通过；宿主 SQLite 3.50.4 未满足 WAL-reset 修复版本要求，因此目标前置检查仍未通过。证据位于 `artifacts/verification/doctor-20261015T104108.125531Z-89b5fb18/summary.json`。
+
+下一步是在 Windows 宿主选择含修复的 Python/SQLite 组合，重跑 `doctor --target`，再逐项执行 [早期环境与集成探针](design/04-implementation-validation.md)。Docker Desktop/WSL2 后端、Windows 控制管道、目标容器隔离、产物发布与性能校准均待验收；当前尚未运行真实模型。

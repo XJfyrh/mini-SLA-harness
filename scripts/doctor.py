@@ -1,4 +1,4 @@
-"""Observe development environment and the prerequisites for the planned Linux runtime."""
+"""Observe development and Windows host prerequisites; container probes remain separate."""
 
 import argparse
 import platform
@@ -36,7 +36,7 @@ def probe(root: Path) -> list[dict[str, object]]:
             "name": "target_os",
             "required_for": "target",
             "observed": platform.system(),
-            "status": "passed" if sys.platform == "linux" else "failed",
+            "status": "passed" if sys.platform == "win32" else "failed",
         },
         {
             "name": "sqlite_wal_reset_fix",
@@ -90,10 +90,12 @@ def main() -> int:
         profile="target-prerequisites" if args.target else "development",
         observations=observations,
         pending_runtime_probes=[
+            "docker_desktop_wsl2_backend",
             "container_permissions",
-            "unix_socket_access",
+            "local_control_pipe_access",
             "cross_process_lock",
-            "process_tree_cancellation",
+            "host_and_container_cancellation",
+            "windows_artifact_publication",
             "measurement_calibration",
         ],
     )

@@ -10,7 +10,7 @@ SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属�
 
 | 决策 | 本版约定 | 原因与后续边界 |
 | --- | --- | --- |
-| ADR 01 部署 | Linux 单机；一个控制器；本地 SQLite WAL | 先验证可靠闭环；多机、高可用与队列留到后续 |
+| ADR 01 部署 | Windows 单机宿主；一个控制器；本地 SQLite WAL；Docker Desktop/WSL2 Linux 容器 | 复用 Linux 执行隔离；原生 Windows 候选、多机与远程 daemon 留到后续 |
 | ADR 02 入口 | CLI 与进程内类型化命令 | 无需 HTTP 服务即可运行；后续 UI 调用同一应用层 |
 | ADR 03 执行 | Python asyncio 调度，沙箱子进程执行 | 模型调用与评估均不占数据库写事务 |
 | ADR 04 候选 | 内容寻址快照为权威；Git 可选用于 diff | 哈希对应真实可恢复代码；Git worktree 本身不提供隔离 |
@@ -19,6 +19,17 @@ SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属�
 | ADR 07 统计 | 固定评估指纹与整数 bps 提升阈值 | 先按 T-30 校准噪声与敏感度，再冻结阈值与采样参数 |
 
 默认规模是 1 个 Advisor、最多 3 个并行 Worker 槽位、每 Assignment 最多 3 次逻辑 Trial。它们都是可配置上限；一个 Trial 内可包含多次模型调用与公开测试，不能将 Trial 数当作模型调用数。MVP 不使用 Redis、向量数据库、微服务、Kubernetes 或 Worker 直接互发消息。
+
+首版平台按以下边界部署：
+
+| 位置 | 职责与约束 |
+| --- | --- |
+| Windows 宿主 | CLI、控制器、模型网关、可信评估 supervisor、StateStore 和权威 ArtifactStore；模型凭证留在可信宿主侧。 |
+| Docker Desktop 的 WSL2 后端 | 使用本机 Linux container 模式执行工具与候选；容器身份绑定 Run、controller generation 和 attempt。不连接远程 daemon。 |
+| 宿主本地 NTFS | 保存数据库、WAL/SHM、不可变 CAS 和备份；不放到网络共享、WSL 共享路径或容器挂载目录。 |
+| Linux 容器工作区 | 保存本 Trial 的可写文件和临时数据；优先使用 Linux 文件系统，通过受控复制与宿主 CAS 交换候选。Windows bind mount 的权限与性能差异须实测。 |
+
+使用者从 Windows 终端操作，无需进入 WSL 发行版。Docker Desktop/WSL2 是首版运行依赖，离线 fake/demo 和骨架开发检查仍可独立执行。选择该方案是为了复用现有容器隔离契约；Windows 原生候选执行和其他宿主平台后续另行验收。[Docker Desktop WSL2](https://docs.docker.com/desktop/features/wsl/)、[文件系统建议](https://docs.docker.com/desktop/features/wsl/best-practices/)
 
 ```mermaid
 flowchart TB
@@ -51,7 +62,7 @@ flowchart TB
 | ArtifactStore | seal / verify / materialize | 不可变对象、清单与哈希；提供受控恢复工作区 |
 | Orchestrator | tick / pause / recover / stop | 驱动 Epoch 屏障、重试、取消、回收与预算准入 |
 
-控制器启动时持有操作系统文件锁；第二个控制器直接拒绝启动。CLI 运行期的控制命令通过权限为 0600 的本地 Unix socket 请求现有控制器，不能自行打开第二个写入者。Worker 与候选程序不获得此 socket。控制器持有唯一写连接；只读查询使用短读取事务。SQLite WAL 可使读写并行，但同时只能有一个写事务，数据库必须位于同机本地磁盘。[SQLite WAL](https://sqlite.org/wal.html)
+控制器启动时持有 Windows Run 级排他文件锁；第二个控制器直接拒绝启动，不能凭锁文件存在判断所有权。CLI 运行期的控制命令通过本地 Windows named pipe 请求现有控制器，不能自行打开第二个写入者。管道显式设置 DACL，仅授权运行用户的受信身份，并拒绝远程客户端；命令主体从连接身份绑定。Worker 与候选容器不获得此管道。控制器持有唯一写连接；只读查询使用短读取事务。SQLite WAL 可使读写并行，但同时只能有一个写事务，数据库必须位于同机本地磁盘。[Named pipe 权限](https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipe-security-and-access-rights)、[拒绝远程客户端](https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-createnamedpipea)、[SQLite WAL](https://sqlite.org/wal.html)
 
 StateStore 的事务代码必须同步、短小，BEGIN IMMEDIATE 后不得 await 模型调用、容器操作、文件上传或 benchmark。繁重操作在事务外完成，随后凭不可变引用提交。SQLite 的写入争用与 SQLITE_BUSY 需要有界重试。[SQLite 事务](https://sqlite.org/lang_transaction.html)
 
@@ -158,13 +169,17 @@ WorkerReport 只含 experiment_summary、hypothesis、public_checks、artifact_r
 
 ## 6 执行隔离与评分可信边界
 
-主机侧 Agent Runner 调用模型，工具在非特权容器执行。容器只挂载公开任务与本 Trial 工作区，根文件系统只读，临时目录有大小限制，禁网、drop capabilities、no-new-privileges、限制 CPU、内存、进程数和 wall-clock。不给候选挂载 Docker socket、StateStore、本地控制 socket、主机 HOME 或模型 API 密钥。环境探针须实际尝试越权读取、联网、超额资源和停止子进程树，并记录拒绝结果；升级镜像或隔离配置后复跑。[S5]
+Windows 宿主侧 Agent Runner 调用模型，工具在非特权 Linux 容器执行。容器只取得公开任务与本 Trial 工作区，根文件系统只读，临时目录有大小限制，禁网、drop capabilities、no-new-privileges、限制 CPU、内存、进程数和 wall-clock。不给候选挂载 Docker socket、StateStore、本地控制管道、主机用户目录或模型 API 密钥。环境探针须实际尝试越权读取、联网、超额资源和停止子进程树，并记录拒绝结果；升级 Docker Desktop、WSL2、镜像或隔离配置后复跑。[S5]
 
-允许读的源码与允许改的源码分开描述。冻结时遍历规范化路径，拒绝路径穿越、符号链接、设备节点及指向工作区外的引用；仅收集白名单文件，限制文件数量和总字节数。用新候选重新物化到全新评估沙箱，禁止对仍可写工作区评分。
+取消必须按 container ID 定位并校验所有权标签，停止容器并确认其中进程已退出；只终止 Windows 上的 docker CLI 子进程不能作为容器停止证据。Docker/WSL2 不可用时记录设施错误和待清理资源，阻断依赖其隔离状态的新执行，恢复后按代次对账。
 
-可信测试驱动在沙箱外，通过长度前缀输入帧发送本次 bytes，候选 runner 返回长度前缀的规范 JSON 结果或受控异常码；stdout 只用于协议、stderr 限长保存，超长／额外帧／畸形输出判协议失败。候选不获得参考答案、私有集、时钟写接口或计分凭证。supervisor 在发送帧前读取 monotonic_ns，完整输出帧接收后再读时钟，随后可信解码并与预计算参考答案比较；候选报告的 time／score 字段无效。IPC 与输出序列化包含在主指标中，不扣基准开销。 畸形／额外帧归 INCORRECT 并附 PROTOCOL_VIOLATION，超大帧归 CANDIDATE_RESOURCE_LIMIT，等待超时归 CANDIDATE_TIMEOUT；均无有效分数。
+允许读的源码与允许改的源码分开描述。冻结时遍历规范化路径，拒绝路径穿越、符号链接、Windows junction/reparse point、设备节点及指向工作区外的引用；仅收集白名单文件，限制文件数量和总字节数。路径在 Windows 和 Linux 两侧均须无歧义，规则见 [产物协议](03-state-transactions.md#8-产物提交与崩溃一致性与-checkpoint)。用新候选重新物化到全新评估沙箱，禁止对仍可写工作区评分。
+
+可信测试驱动位于 Windows 宿主、候选沙箱外，通过长度前缀输入帧发送本次 bytes，候选 runner 返回长度前缀的规范 JSON 结果或受控异常码；通道禁用 TTY 和文本换行转换，stdout 只用于协议、stderr 限长保存，超长／额外帧／畸形输出判协议失败。候选不获得参考答案、私有集、时钟写接口或计分凭证。supervisor 在发送帧前读取 monotonic_ns，完整输出帧接收后再读时钟，随后可信解码并与预计算参考答案比较；候选报告的 time／score 字段无效。宿主到容器的 IPC、Docker/WSL2 通道与输出序列化包含在主指标中，不扣基准开销。 畸形／额外帧归 INCORRECT 并附 PROTOCOL_VIOLATION，超大帧归 CANDIDATE_RESOURCE_LIMIT，等待超时归 CANDIDATE_TIMEOUT；均无有效分数。
 
 性能测量使用独占资源槽和固定镜像／CPU 集／环境。warmup 各在独立新进程使用独立输入，预热宿主与镜像缓存；正式样本也分别新建进程，import 与 READY 握手在计时外，但本次输入在计时前不发送、不挂载。每个进程一次 aggregate 后销毁；样本之间不共享可写磁盘、内存或缓存。互异输入由冻结 manifest 决定，对所有候选顺序一致；正确性另测重复调用与内容等价实例。无法隔离编程负载时在测量窗口暂停它们。预热与正式样本数从 2/5 开始，按 [T-30](04-implementation-validation.md) 校准后冻结，正式样本数取不小于 3 的奇数。
+
+环境指纹还须冻结 Windows、Docker Desktop、WSL2 内核版本、后端资源上限、镜像 digest、挂载方式与 IPC 实现，并纳入 evaluation_spec_hash／audit_spec_hash；变化需创建新 Run。容器 CPU 限制作用于 WSL2 环境，宿主争用仍须通过 T-30 实测；报告将成绩标为该宿主—Linux 容器链路的端到端吞吐量。
 
 主指标 end_to_end_records_per_second：各样本 r=N×10^9/elapsed_ns，取精确有理数中位数，score_i=floor(r_median×1000)，不先四舍五入浮点数。阈值为 old+max(1,(abs(old)×min_improvement_bps+9999)//10000)；用任意精度整数并校验最终 int64。新分支首个有效候选直接成为 Head。bps 为 0～10000 的整数，校准后进入 scoring policy 与 evaluation_spec_hash；修改需新 Run。
 

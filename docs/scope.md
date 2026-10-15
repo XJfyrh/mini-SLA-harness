@@ -6,9 +6,11 @@
 
 ## 后续设计
 
+首版平台采用 Windows 宿主 + Docker Desktop/WSL2 Linux 容器：宿主负责 CLI、控制器、SQLite、权威候选快照和可信评估 supervisor，容器执行工具与候选。具体边界由 [总体架构](design/02-architecture.md#1-架构决策与运行边界) 负责；原生 Windows 候选执行和其他宿主部署不在首版内。
+
 TaskSpec、权威 StateStore、不可变候选快照、独立可信评估、预算预留与 UNKNOWN 对账、controller/attempt fencing、强停竞态、暂停/恢复、Advisor 规划、Workers 并发、最终审计与消融实验仍待实现。当前 demo 表不是正式 StateStore schema。
 
-下一步同时取得目标环境、provider 契约和最小编辑—评估链路的真实反馈，并实现 M0 协议测试。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。Linux 隔离、可信计时、并发和模型效果分别需要实际验收记录。
+下一步同时取得 Windows 宿主与 Docker Desktop/WSL2 环境、provider 契约和最小编辑—评估链路的真实反馈，并实现 M0 协议测试。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。Windows 控制与产物发布、Linux 容器隔离、可信计时、并发和模型效果分别需要实际验收记录。
 
 ## 设计文档
 

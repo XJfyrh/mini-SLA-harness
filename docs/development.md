@@ -104,9 +104,9 @@ python scripts/dev.py doctor
 python scripts/dev.py doctor --target
 ```
 
-doctor 实际观察 Python/SQLite/操作系统，并在临时数据库执行 WAL 写入、关闭连接、重开读取和完整性检查。默认退出码对应开发环境；`--target` 还要求 Linux 和 [状态协议要求的 SQLite 修复版本](design/03-state-transactions.md)。默认 check 也展示这两个目标条件的结果，开发检查与目标前置条件分别判定。
+doctor 实际观察 Python/SQLite/操作系统，并在临时数据库执行 WAL 写入、关闭连接、重开读取和完整性检查。默认退出码对应开发环境；`--target` 还要求 Windows 宿主和 [状态协议要求的 SQLite 修复版本](design/03-state-transactions.md)。默认 check 也展示这两个目标条件的结果，开发检查与目标前置条件分别判定；Linux CI 继续验证跨平台骨架，不代表首版宿主部署支持。
 
-容器权限、Unix socket 访问、跨进程锁、进程树取消和计时校准由 [早期探索](design/04-implementation-validation.md) 逐项验收；doctor 把尚未执行的项目列为 pending_runtime_probes。
+`--target` 当前只检查宿主基础前置条件，不连接 Docker 或执行容器。Docker Desktop/WSL2 后端、本地控制管道权限、跨进程锁、宿主与容器停止、NTFS 产物发布、容器权限和计时校准由 [早期探索](design/04-implementation-validation.md) 逐项验收；doctor 把尚未执行的项目列为 pending_runtime_probes。首次真实执行前须确认本机 Linux container 模式、WSL2 后端和冻结镜像；离线 check/demo 无需 Docker。
 
 ## 持续集成
 
