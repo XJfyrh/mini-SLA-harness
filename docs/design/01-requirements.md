@@ -1,14 +1,8 @@
 # mini SLA harness 产品需求设计
 
-> 来源：[mini SLA harness 产品需求设计](https://chatgpt.com/space/page_3e7e4a9aa9c8819195c8e21e75f6073d) · 导入：2026-10-15 06:05:42 UTC
-> 以下正文描述设计目标，当前实现见[当前架构](../architecture.md)。快照与维护约定见[本地索引](README.md)。
-
-<!-- pages-snapshot-body:start -->
-版本 0.2 · 2026年10月11日 · 建议方案，尚未实现
-
 [返回设计总览](00-overview.md)
 
-本项目中的 SLA 指 Stateless Language Agents。本文把共享会话中的研究执行框架细化为可开发、可验收的单机产品。核心交互采用 CLI；产品价值在于外部可信状态、上下文重建、受控探索和可复核的实验。数值均为工程默认，必须在 Run 启动前冻结；Python、SQLite 与容器方案仍须通过实现验收。
+本项目中的 SLA 指 Stateless Language Agents。本文定义可开发、可验收的单机研究执行框架。核心交互采用 CLI；产品价值在于外部可信状态、上下文重建、受控探索和可复核的实验。数值均为工程默认，必须在 Run 启动前冻结；Python、SQLite 与容器方案仍须通过实现验收。
 
 ## 1 定位与目标与成功定义
 
@@ -25,19 +19,19 @@
 
 工程成功与研究效果分别验收：未找到更快实现不代表 Harness 失败；找到高分也不能掩盖恢复、隔离或计费缺陷。本文不承诺相对基线的性能优势，也不把“至少提高某个百分比”作为功能验收条件。
 
-## 2 来源与设计决策与范围
+## 2 设计决策与范围
 
-来源标签：[S1] 原共享会话中的 Mini-SLA 与 StateStore 方案；[S2] 原论文 §2.2、§3、§5 和附录 B.1。论文支持 Harness 持久状态、全新 Advisor／Worker、并行与局部保留；原会话建议单 Worker→可靠恢复→Advisor／并行→消融的实施顺序。具体 Schema、CLI、可信 IPC 计时、防缓存、整数阈值和最终审计属于工程细化，不能作为论文公开协议或已证实效果。
+设计参考 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625) §2.2、§3、§5 和附录 B.1 的持久研究状态、全新 Advisor／Worker、并行与局部保留思路。工程实施按单 Worker→可靠恢复→Advisor／并行→消融推进。具体 Schema、CLI、可信 IPC 计时、防缓存、整数阈值和最终审计属于项目工程设计，不等同于论文公开协议或已证实效果。
 
-| 编号／来源 | 决策 | 本版处理 |
+| 编号 | 决策 | 本版处理 |
 | --- | --- | --- |
-| D-01 · [S1] 延续 | Harness 持有状态，Agent 每个 Trial／Epoch 重建会话 | 使用 ContextBuilder，禁止以聊天历史作为权威当前状态。 |
-| D-02 · [S1] 延续 | 局部与全局成果分离 | Branch 拥有局部候选；Worker 只是执行槽位。 |
-| D-03 · [S1] 延续 | 单机 Python、SQLite、CLI、独立评估器 | 一个控制器写库，WAL 模式；无 Redis 或跨机器调度。 |
-| D-04 · [S1] 细化 | 三个 Worker，各方向连续尝试 | 建议上限 3 个槽位×每个 Assignment 3 次 Trial；参数可配置。 |
-| D-05 · 本次新增 | 任务、交互与停止语义 | 固定 JSONL 语义、CLI 输出、Run 状态、排空及强制停止规则。 |
-| D-06 · 本次新增 | 评估与准入阈值 | 独立进程预热2次、fresh-process测量5次、可信IPC中位数；整数bps默认100（ε=1%），仅作噪声过滤。 |
-| D-07 · 本次新增 | 交付与效果证据分开 | 先 fake 验证预算/fencing/协议，再接真实模型、恢复、Advisor并发与公平消融。 |
+| D-01 | Harness 持有状态，Agent 每个 Trial／Epoch 重建会话 | 使用 ContextBuilder，禁止以聊天历史作为权威当前状态。 |
+| D-02 | 局部与全局成果分离 | Branch 拥有局部候选；Worker 只是执行槽位。 |
+| D-03 | 单机 Python、SQLite、CLI、独立评估器 | 一个控制器写库，WAL 模式；无 Redis 或跨机器调度。 |
+| D-04 | 三个 Worker，各方向连续尝试 | 建议上限 3 个槽位×每个 Assignment 3 次 Trial；参数可配置。 |
+| D-05 | 任务、交互与停止语义 | 固定 JSONL 语义、CLI 输出、Run 状态、排空及强制停止规则。 |
+| D-06 | 评估与准入阈值 | 独立进程预热2次、fresh-process测量5次、可信IPC中位数；整数bps默认100（ε=1%），仅作噪声过滤。 |
+| D-07 | 交付与效果证据分开 | 先 fake 验证预算/fencing/协议，再接真实模型、恢复、Advisor并发与公平消融。 |
 
 目标 MVP 包含 TaskAdapter、AgentAdapter、StateStore、ArtifactStore、ContextBuilder、AdvisorScheduler、WorkerRuntime、ProtectedEvaluator 与 Orchestrator，保留 Advisor 和最多三个并行 Worker。交付先用 fake 验证事务、最小预算门控与 fencing，再形成单 Worker 纵向闭环、恢复、Advisor 与并发；这是降低调试复杂度的实施顺序，不是删除完整研究方案。真实模型先支持一个提供方。
 
@@ -156,13 +150,8 @@ def aggregate(data: bytes) -> list[tuple[str, int, int, int]]:
 
 可靠性、可诊断性和隔离是实现门槛，不依赖 Agent 自觉遵守。完整对话与假设可留作分析，但不能升级成权威观测事实；事实、假设和 Advisor 决策必须标注来源。正式验收用例与阶段 Gate 见《实施与验收设计》。
 
-## 8 默认决策与来源引用
+## 8 默认决策
 
 本版默认选择单机 CLI、Python、SQLite WAL、一个控制器、三个可配置执行槽位、每 Assignment 最多三个 Trial、先 fake 后真实模型、2 次独立进程预热＋5 次 fresh-process 协议测量中位数、min_improvement_bps=100（ε=1%）、pause／stop 排空当前 Trial。它们是为了尽快形成可验证闭环的建议，不是已经实现的能力。
 
 实现前需固定真实模型适配器、可用 Token 预算、评估机器规格、数据规模与容器镜像。若暂时没有用户偏好，先使用 fake 适配器和固定本地样例推进协议开发；真实付费运行前必须使用用户配置的模型与额度。
-
-[S1] 原始共享会话：https://chatgpt.com/share/6ac9ad68-27d4-83ec-a674-df6e7b748739?ogimg=plain
-
-[S2] 原会话关联论文：https://arxiv.org/abs/2610.07625 。本版工程需求主要由 [S1] 延展；新增产品协议不归因于论文。
-<!-- pages-snapshot-body:end -->

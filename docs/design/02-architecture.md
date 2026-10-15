@@ -1,18 +1,12 @@
 # mini SLA harness 总体架构与接口设计
 
-> 来源：[mini SLA harness 总体架构与接口设计](https://chatgpt.com/space/page_466c7cc880848191868fee59d5e652f0) · 导入：2026-10-15 06:05:42 UTC
-> 以下正文描述设计目标，当前实现见[当前架构](../architecture.md)。快照与维护约定见[本地索引](README.md)。
-
-<!-- pages-snapshot-body:start -->
-版本 0.2 · 2026年10月11日 · 待实现验收
-
 [返回设计总览](00-overview.md)
 
 系统以持久研究状态驱动实验。一个本地控制器负责调度、事务和预算；Advisor 只提计划，Worker 只在独立 Trial 中修改允许的代码，正式成绩由受保护评估器产生。本文固定组件职责、上下文边界和内部协议，使产品需求能够拆分为可实现模块。
 
 ## 1 架构决策与运行边界
 
-SLA 指 Stateless Language Agents。承接原讨论的无状态调用、角色专属上下文、局部分支与全局最优、独立评估和单机 CLI 方案。[S1][S2] 本版补充生命周期、计量与故障边界；这些协议是项目设计，不是论文公布的数据库或 API。
+SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属上下文、局部分支与全局最优、独立评估和单机 CLI；研究背景见 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625)。生命周期、计量与故障边界是本项目的协议设计，不是论文公布的数据库或 API。
 
 | 决策 | 本版约定 | 原因与后续边界 |
 | --- | --- | --- |
@@ -57,9 +51,9 @@ flowchart TB
 | ArtifactStore | seal / verify / materialize | 不可变对象、清单与哈希；提供受控恢复工作区 |
 | Orchestrator | tick / pause / recover / stop | 驱动 Epoch 屏障、重试、取消、回收与预算准入 |
 
-控制器启动时持有操作系统文件锁；第二个控制器直接拒绝启动。CLI 运行期的控制命令通过权限为 0600 的本地 Unix socket 请求现有控制器，不能自行打开第二个写入者。Worker 与候选程序不获得此 socket。控制器持有唯一写连接；只读查询使用短读取事务。SQLite WAL 可使读写并行，但同时只能有一个写事务，数据库必须位于同机本地磁盘。[S3]
+控制器启动时持有操作系统文件锁；第二个控制器直接拒绝启动。CLI 运行期的控制命令通过权限为 0600 的本地 Unix socket 请求现有控制器，不能自行打开第二个写入者。Worker 与候选程序不获得此 socket。控制器持有唯一写连接；只读查询使用短读取事务。SQLite WAL 可使读写并行，但同时只能有一个写事务，数据库必须位于同机本地磁盘。[SQLite WAL](https://sqlite.org/wal.html)
 
-StateStore 的事务代码必须同步、短小，BEGIN IMMEDIATE 后不得 await 模型调用、容器操作、文件上传或 benchmark。繁重操作在事务外完成，随后凭不可变引用提交。SQLite 的写入争用与 SQLITE_BUSY 需要有界重试。[S4]
+StateStore 的事务代码必须同步、短小，BEGIN IMMEDIATE 后不得 await 模型调用、容器操作、文件上传或 benchmark。繁重操作在事务外完成，随后凭不可变引用提交。SQLite 的写入争用与 SQLITE_BUSY 需要有界重试。[SQLite 事务](https://sqlite.org/lang_transaction.html)
 
 ## 3 一轮研究的完整执行流程
 
@@ -221,15 +215,11 @@ AdapterCapabilities 必须声明 fresh_session、usage_reporting、per_call_limi
 
 ## 9 参考与关联文档
 
-[S1] 原始会话 论文详细讲解。https://chatgpt.com/share/6ac9ad68-27d4-83ec-a674-df6e7b748739 。读取日期 2026年10月11日。工程方案承接其中的 Mini-SLA 与 StateStore 两轮讨论。
+- Zhang 等，[Stateless Language Agents: Scaling Long-Horizon Automated Research](https://arxiv.org/abs/2610.07625)，arXiv:2610.07625v1。只采用架构思想，不将论文性能结果当作本项目预期指标。
+- [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)：WAL 并发与本机存储约束。
+- [SQLite Transaction](https://sqlite.org/lang_transaction.html)：事务与忙重试语义。
+- [Docker Engine security](https://docs.docker.com/engine/security/)：容器隔离及守护进程权限边界。
 
-[S2] Zhang 等，Stateless Language Agents: Scaling Long-Horizon Automated Research，arXiv:2610.07625v1。https://arxiv.org/abs/2610.07625 。本文只采用架构思想，不把论文性能结果当作本项目的预期指标。
-
-[S3] SQLite Write-Ahead Logging。https://sqlite.org/wal.html 。用于 WAL 并发与本机存储约束。[S4] SQLite Transaction。https://sqlite.org/lang_transaction.html 。用于事务和忙重试语义。
-
-[S5] Docker Engine security。https://docs.docker.com/engine/security/ 。用于容器隔离及守护进程权限边界。访问日期均为 2026年10月11日。
-
-关联文档：01 产品需求设计定义目标任务与功能验收；03 状态存储与事务协议定义实体和原子性；04 实施计划与验收设计定义里程碑、故障注入和效果比较。
+关联文档：[产品需求设计](01-requirements.md) 定义目标任务与功能验收；[状态存储与事务协议](03-state-transactions.md) 定义实体和原子性；[实施与验收设计](04-implementation-validation.md) 定义里程碑、故障注入和效果比较。
 
 记忆层等备选想法已单独整理至 [Mini-SLA 想法与探索](exploration.md)，尚未决定实现，不纳入当前 M0 范围。
-<!-- pages-snapshot-body:end -->

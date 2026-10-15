@@ -32,13 +32,3 @@
 ## 验证边界
 
 本轮使用确定性 fake、真实 SQLite 与实际安装制品，没有真实模型调用或研究效果测量。当前结果证明开发与安装链路，协议范围由 [设计范围](scope.md) 负责。其他操作系统尚未实机验证，链接检查不验证外部站点与标题锚点。
-
-初始化和迁移历史保留在 `5de972d` 及其父提交；本轮在其基础上创建独立分支。原目录仍保留迁移备份，后续入口使用 E 盘仓库。
-
-## Pages 设计快照导入
-
-2026-10-15 在独立分支 `docs/import-pages-design` 重新读取六份当前 Page，导入 261 个正文块。正式设计五份，探索材料一份；12 个 fenced code blocks 保持来源字节内容不变，页间引用改成本地相对链接。
-
-入口见 [本地设计索引](design/README.md)，每页来源和正文 hash 见 [sources.json](design/sources.json)。导入完整性证据位于 `artifacts/design-import/integrity.json`；最终提交的完整 check、demo、测试数量及wheel 验收结果位于 `artifacts/design-import/verification.json`，对应日志在同目录。
-
-此次没有修改 Pages、下载历史附件或扩大实现范围；当前实现文档与规划正文分别维护。

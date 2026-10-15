@@ -1,11 +1,5 @@
 # mini SLA harness 实施与验收设计
 
-> 来源：[mini SLA harness 实施与验收设计](https://chatgpt.com/space/page_02ab1ff0cbe08191832190d785c66f5c) · 导入：2026-10-15 06:05:42 UTC
-> 以下正文描述设计目标，当前实现见[当前架构](../architecture.md)。快照与维护约定见[本地索引](README.md)。
-
-<!-- pages-snapshot-body:start -->
-版本 0.2 · 2026年10月11日 · 建议方案，尚未实现
-
 [返回设计总览](00-overview.md)
 
 本文规定如何把设计推进到可运行闭环，以及如何区分可靠性通过与研究效果成立。所有参数为建议默认；本文中的命令、测试和报告是待实施的验收方案，不代表已经运行或通过。产品需求编号 FR-01～FR-12 与本文件测试和阶段 Gate 对应。
@@ -174,5 +168,4 @@ mini-sla export RUN_ID --out exports/RUN_ID
 
 设计目标仍为 Python CLI＋SQLite WAL＋单控制器、Advisor 与最多3 Worker／每Assignment最多3 Trial。先实现预算门控和fencing，再真实调用和恢复；不是已经验证的技术栈。阈值统一整数bps；force阻断未finalize晋升；初始化与规划也可恢复；最终审计独立且不可回流。
 
-[S1] 原始共享会话：https://chatgpt.com/share/6ac9ad68-27d4-83ec-a674-df6e7b748739?ogimg=plain 。[S2] 原会话关联论文：https://arxiv.org/abs/2610.07625 。本文阶段、测试编号、CLI与预算细则为工程设计建议；不归因于论文原始实验实现。
-<!-- pages-snapshot-body:end -->
+研究背景见 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625)。本文阶段、测试编号、CLI 与预算细则为项目工程设计，不等同于论文原始实验实现。

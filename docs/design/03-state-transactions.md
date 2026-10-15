@@ -1,14 +1,8 @@
 # mini SLA harness 状态存储与事务协议
 
-> 来源：[mini SLA harness 状态存储与事务协议](https://chatgpt.com/space/page_e0f7726dd0308191ba3c3fe229dc6efa) · 导入：2026-10-15 06:05:42 UTC
-> 以下正文描述设计目标，当前实现见[当前架构](../architecture.md)。快照与维护约定见[本地索引](README.md)。
-
-<!-- pages-snapshot-body:start -->
-版本 0.2 · 2026年10月11日 · 待实现验收
-
 [返回设计总览](00-overview.md)
 
-本文规定单机 MVP 的权威状态、事务接口与故障恢复协议。实现采用 Python asyncio、SQLite WAL 单写入者与不可变 Artifact Store；SLA 指 Stateless Language Agents。本文承接原始会话 [S1] 的 Mini-SLA / StateStore 讨论，是进一步细化的工程设计，不是论文公开的数据库实现。
+本文规定单机 MVP 的权威状态、事务接口与故障恢复协议。设计采用 Python asyncio、SQLite WAL 单写入者与不可变 Artifact Store；SLA 指 Stateless Language Agents。
 
 ## 1 状态承诺与初始化
 
@@ -75,9 +69,9 @@ CREATE UNIQUE INDEX ux_usage_call
 ON usage_ledger(call_id);
 ```
 
-候选与 Run 存在循环引用时，创建 Run 先不设置 best，再注册 baseline 并完成评估。SQLite 每个连接启用 foreign_keys=ON；采用 WAL、synchronous=FULL 与有限 busy_timeout。WAL 支持读写并发，但同时只有一个写入者且依赖本机存储；FULL 在提交时同步 WAL。[S3] 单写入队列执行短事务，BEGIN IMMEDIATE 的争用须有界处理。[S4] 数据库事务内禁止网络 await、模型调用和评估执行。
+候选与 Run 存在循环引用时，创建 Run 先不设置 best，再注册 baseline 并完成评估。SQLite 每个连接启用 foreign_keys=ON；采用 WAL、synchronous=FULL 与有限 busy_timeout。WAL 支持读写并发，但同时只有一个写入者且依赖本机存储；FULL 在提交时同步 WAL。[SQLite WAL](https://sqlite.org/wal.html) 单写入队列执行短事务，BEGIN IMMEDIATE 的争用须有界处理。[SQLite 事务](https://sqlite.org/lang_transaction.html) 数据库事务内禁止网络 await、模型调用和评估执行。
 
-部署验收记录 Python 实际 sqlite_version，使用含官方 WAL-reset 修复的版本：3.51.3 及以后，或已回移修复的 3.44.6/3.50.7 分支。[S3] Checkpoint 与写入由同一控制器协调，避免依赖未知系统版本。
+部署验收记录 Python 实际 sqlite_version，使用含官方 WAL-reset 修复的版本：3.51.3 及以后，或已回移修复的 3.44.6/3.50.7 分支。[SQLite WAL](https://sqlite.org/wal.html) Checkpoint 与写入由同一控制器协调，避免依赖未知系统版本。
 
 ## 3 生命周期与调度屏障
 
@@ -286,13 +280,9 @@ Advisor 证据在短读事务获取 run.version／event_seq，生成不可变 co
 
 实现完成的核心证据是：每个 Best 可定位精确代码和正式评估，每次失败／重复调用可定位真实成本，每个初始化／规划／执行状态有可解释恢复路径。FreezeFinal 在搜索终态原子冻结 final_candidate_id、export_manifest_hash、audit_spec_hash，建立一个独立 FINAL_AUDIT job；只能写 audit_record，禁止写 Branch／Trial／Best。审计正确且性能测量有效为 PASSED；候选错误为 REJECTED；设施重试耗尽为 INCONCLUSIVE。报告显示搜索成绩与审计成绩各自的数据／环境身份，不直接混排；失败只发布明确未验证的研究记录，不能悄悄选择另一候选继续试。 若基线从未有效且 Best 为空，则不创建审计，导出 NO_CANDIDATE 与失败／强停原因；不能虚构最终成果。
 
-## 11 来源与适用范围
+## 11 技术依据与适用范围
 
-[S1] 原始共享会话：https://chatgpt.com/share/6ac9ad68-27d4-83ec-a674-df6e7b748739?ogimg=plain 。读取日期：2026年10月11日。
+- [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)：WAL 并发、本机存储和同步语义。
+- [SQLite Transaction](https://sqlite.org/lang_transaction.html)：事务控制与写入争用语义。
 
-[S3] SQLite Write-Ahead Logging：https://sqlite.org/wal.html 。用于 WAL 并发、本机存储、同步与版本修复事实；访问日期：2026年10月11日。
-
-[S4] SQLite Transaction：https://sqlite.org/lang_transaction.html 。用于事务控制与写入争用语义；访问日期：2026年10月11日。
-
-本文 Schema、命令、整数 bps 阈值、可信 IPC 计时、防缓存、attempt/fencing、预算细化、初始化／规划恢复和独立最终审计均为工程设计，不是论文实验结果。原会话提供 StateStore、逐调用账本和恢复方向；官方 SQLite 文档只支持相应存储事实，不直接提供这些应用层协议。
-<!-- pages-snapshot-body:end -->
+本文 Schema、命令、整数 bps 阈值、可信 IPC 计时、防缓存、attempt/fencing、预算细化、初始化／规划恢复和独立最终审计均为工程设计，不是论文实验结果。官方 SQLite 文档只支持相应存储事实，不直接提供这些应用层协议。
