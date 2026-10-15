@@ -1,22 +1,25 @@
 ---
 name: mini-sla
-description: "开发、修复、审查或调整 mini-SLA-harness 仓库时使用。按任务选择短原则、项目契约和真实验证入口，完成可审查的改动。"
+description: "开发、修复、审查或调整 mini-SLA-harness 仓库时使用。按目标设计、模型边界、实现迁移、诊断验证、协作维护分类路由到短原则和项目契约。"
 ---
 
 # Mini-SLA 项目开发
 
 先读 [AGENTS.md](../../../AGENTS.md) 与 [README](../../../README.md)，确认本次任务范围、当前代码和用户已有修改。路径相对本技能文件；执行命令时使用所在仓库的根目录。
 
-## 原则
+## 分类路由
 
-每次任务读 [尽早暴露错误](../mini-sla-fail-early/SKILL.md) 和 [取得真实反馈](../mini-sla-real-feedback/SKILL.md)。其余按触发条件读取：
+每次任务读 [尽早暴露错误](../mini-sla-fail-early/SKILL.md) 和 [取得真实反馈](../mini-sla-real-feedback/SKILL.md)。再按当前要做的决策选择下面的分类，在分类表中只读取命中触发条件的原则。
 
-| 遇到什么情况 | 使用哪条原则 |
+| 当前要做什么 | 从哪里选择原则 |
 | --- | --- |
-| 修复错误、同一问题反复出现 | [修复根因](../mini-sla-fix-root-causes/SKILL.md) |
-| 新增或修改测试 | [验证行为](../mini-sla-test-behavior/SKILL.md) |
-| 新能力、重构或多步改动 | [小步验证](../mini-sla-small-steps/SKILL.md) |
-| 重复纠正、维护仓库约束 | [把规则变成检查](../mini-sla-encode-invariants/SKILL.md) |
+| 判断完成条件、功能取舍或备选方案 | [目标与方案](references/goals-and-design.md) |
+| 设计状态、接口、输入校验、恢复或并发 | [模型与边界](references/models-and-boundaries.md) |
+| 新增能力、重构、迁移或批量修改 | [实现与迁移](references/implementation-and-migration.md) |
+| 定位失败、修改测试或判断性能与评估结果 | [诊断与验证](references/diagnosis-and-verification.md) |
+| 等待用户、控制上下文、降低阅读成本或沉淀经验 | [协作与维护](references/collaboration-and-maintenance.md) |
+
+任务可以跨类。先处理会阻断后续的判断，出现新的失败或设计问题时重新路由；不因为进入一类就加载该类全部原则。用户点名某条原则时直接读取它。交付时说明原则实际改变的决策和证据，不逐条汇报已读名称。
 
 ## 推进任务
 
@@ -29,4 +32,4 @@ description: "开发、修复、审查或调整 mini-SLA-harness 仓库时使用
 
 修改完成后，按 [开发指南](../../../docs/development.md) 执行完整验证，读取 [本次证据](../../../docs/testing.md)。检查当前 diff、受影响调用方和失败路径；交付行为变化、实际结果及剩余问题。
 
-技能迭代方法见 [项目技能包维护](../../../docs/development.md#项目技能包)。
+技能迭代方法见 [项目技能包维护](../../../docs/development.md#项目技能包)；追溯上游或调整分类时读 [pstack 吸收映射](references/pstack-map.md)。
