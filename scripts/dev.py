@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from scripts.evidence import CommandFailure, Evidence
+from scripts.windows_runtime import verified_python
 
 ROOT = Path(__file__).resolve().parents[1]
 VENV = ROOT / ".venv"
@@ -105,12 +106,22 @@ def run_checks(evidence: Evidence, commands: list[tuple[str, list[str], float]])
 def check() -> int:
     evidence = Evidence(ROOT, "check")
     python = str(PYTHON)
+    try:
+        doctor_python = str(verified_python(ROOT)) if os.name == "nt" else python
+    except RuntimeError as error:
+        return evidence.finish(str(error))
     return run_checks(
         evidence,
         [
             (
                 "doctor",
-                [python, "scripts/doctor.py", "--evidence-dir", str(evidence.directory / "doctor")],
+                [
+                    doctor_python,
+                    "scripts/doctor.py",
+                    "--evidence-dir",
+                    str(evidence.directory / "doctor"),
+                    *(["--target"] if os.name == "nt" else []),
+                ],
                 30,
             ),
             ("format", [python, "-m", "ruff", "format", "--check", ".", ".agents/skills"], 30),
@@ -131,6 +142,64 @@ def check() -> int:
             ),
         ],
     )
+
+
+def m0_check() -> int:
+    evidence = Evidence(ROOT, "m0")
+    commands: list[tuple[str, list[str], float]] = []
+    python = str(PYTHON)
+    if os.name == "nt":
+        try:
+            python = str(verified_python(ROOT))
+        except RuntimeError as error:
+            return evidence.finish(str(error))
+        commands.extend(
+            [
+                ("runtime", [str(PYTHON), "scripts/windows_runtime.py", "check"], 30),
+                (
+                    "doctor",
+                    [
+                        python,
+                        "scripts/doctor.py",
+                        "--target",
+                        "--evidence-dir",
+                        str(evidence.directory / "doctor"),
+                    ],
+                    30,
+                ),
+                (
+                    "protocol-tests",
+                    [
+                        python,
+                        "-m",
+                        "unittest",
+                        "discover",
+                        "-s",
+                        "tests",
+                        "-p",
+                        "test_protocol.py",
+                        "-v",
+                    ],
+                    60,
+                ),
+            ]
+        )
+    evidence.report["execution_python"] = python
+    commands.append(
+        (
+            "m0",
+            [
+                python,
+                "-m",
+                "mini_sla_harness",
+                "m0-check",
+                "--output-dir",
+                str(evidence.directory / "acceptance"),
+            ],
+            120,
+        )
+    )
+    return run_checks(evidence, commands)
 
 
 def main() -> int:
@@ -171,26 +240,10 @@ def main() -> int:
             elif args.command == "package-check":
                 run([str(PYTHON), "scripts/package_check.py"])
             elif args.command == "doctor":
-                run([str(PYTHON), "scripts/doctor.py", *(["--target"] if args.target else [])])
+                python = verified_python(ROOT) if args.target and os.name == "nt" else PYTHON
+                run([str(python), "scripts/doctor.py", *(["--target"] if args.target else [])])
             elif args.command == "m0-check":
-                evidence = Evidence(ROOT, "m0")
-                return run_checks(
-                    evidence,
-                    [
-                        (
-                            "m0",
-                            [
-                                str(PYTHON),
-                                "-m",
-                                "mini_sla_harness",
-                                "m0-check",
-                                "--output-dir",
-                                str(evidence.directory / "acceptance"),
-                            ],
-                            120,
-                        )
-                    ],
-                )
+                return m0_check()
             else:
                 evidence = Evidence(ROOT, "demo")
                 return run_checks(

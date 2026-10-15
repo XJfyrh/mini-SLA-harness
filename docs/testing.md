@@ -9,9 +9,11 @@ python scripts/dev.py m0-check
 python scripts/dev.py check
 ```
 
-`m0-check` 每次创建独立 `artifacts/verification/m0-*/`，成功输出 `M0 offline acceptance: passed`。入口无需模型账号、付费额度、私有数据或 Docker；fake 分数与 token 用量用于验证协议，实际文件、SQLite、线程竞争和受控子进程保留。当前开发解释器的 SQLite 版本和目标解释器探针分别报告，M0 通过不代表 Docker 或真实模型已验收。
+`m0-check` 每次创建独立 `artifacts/verification/m0-*/`，最终汇总必须为 `m0: passed`。Windows x64 使用 [固定运行时](development.md#尽早检查环境)，依次执行运行时完整性/版本、`doctor --target`、协议测试和 10 组场景；固定运行时缺失或漂移时失败，不回退到开发解释器。Linux CI 以开发解释器运行离线场景。入口无需模型账号、付费额度、私有数据或 Docker；fake 分数与 token 用量用于验证协议，实际文件、SQLite、线程竞争和受控子进程保留。M0 通过不代表 Docker 或真实模型已验收。
 
 打开打印路径下的 `acceptance/report.json`：10 组场景均应为 passed，`external_model_requests=0`、`usage_kind=simulated_tokens`。每组列出需求编号、实际观测和数据库相对路径；同一输出目录禁止覆盖。安装后也可运行 `mini-sla m0-check --output-dir NEW_DIR --json`；默认不指定目录时生成新的目录。
+
+顶层 `summary.json` 汇总全部步骤，记录实际 `execution_python`，Windows 目标前置检查位于 `doctor/summary.json`。场景 CLI 自身的 `M0 offline acceptance: passed` 不替代整体验收退出码与汇总；直接运行已安装 CLI 也不会执行开发入口附加的环境和协议测试。
 
 | 检查内容 | 应观察的结果 |
 | --- | --- |

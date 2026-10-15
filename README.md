@@ -6,7 +6,7 @@ Mini-SLA Harness 探索如何让无状态 Agent 围绕可验证任务持续改�
 
 ## 先跑一个 Demo
 
-需要 Python 3.14。Windows 本地仓库位于 `E:\dev\mini-SLA-harness`，无需手动激活虚拟环境：
+需要 Python 3.14。Windows x64 的 bootstrap 同时准备固定 Python 3.14.8／SQLite 3.54.0 运行时，详见 [环境准备](docs/development.md#尽早检查环境)。本地仓库位于 `E:\dev\mini-SLA-harness`，无需手动激活虚拟环境：
 
 ```powershell
 Set-Location -LiteralPath 'E:\dev\mini-SLA-harness'
@@ -26,7 +26,7 @@ python scripts/dev.py m0-check
 python scripts/dev.py check
 ```
 
-第一条执行 10 组离线协议场景，并打印独立证据目录；成功显示 `M0 offline acceptance: passed`。`acceptance/report.json` 给出逐场景结果、观测值和 SQLite 路径，覆盖预算竞争、UNKNOWN 对账、旧执行权拒绝、强停竞态及基线/规划重开。第二条验证代码、测试和干净 wheel 安装。详细断言与查看方法见 [M0 验收](docs/testing.md#m0-离线协议验收)。
+Windows 上第一条使用固定运行时，先检查文件完整性、目标宿主基础条件和协议测试，再执行 10 组离线场景；最后汇总必须为 `m0: passed`。缺失或漂移的固定运行时会失败，已有开发环境可先运行 `python scripts/dev.py runtime-bootstrap`。`acceptance/report.json` 给出逐场景结果、观测值和 SQLite 路径。第二条验证代码、测试和干净 wheel 安装。详细断言与查看方法见 [M0 验收](docs/testing.md#m0-离线协议验收)。
 
 任务契约使用 JSON，可单独校验公开示例：
 

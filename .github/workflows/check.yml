@@ -27,6 +27,9 @@ jobs:
         run: python scripts/dev.py bootstrap
       - name: Check
         run: python scripts/dev.py check
+      - name: M0 acceptance
+        if: ${{ !cancelled() && steps.bootstrap.outcome == 'success' }}
+        run: python scripts/dev.py m0-check
       - name: Demo
         if: ${{ !cancelled() && steps.bootstrap.outcome == 'success' }}
         run: python scripts/dev.py demo
