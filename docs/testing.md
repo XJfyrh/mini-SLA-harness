@@ -23,11 +23,22 @@
 
 验收在项目 `artifacts/tmp` 下创建全新 venv，只安装本次 wheel，不安装 editable 包或开发工具。实际 CLI 从独立的临时工作目录启动；子进程只保留操作系统与临时目录所需环境，禁用用户 site 和路径注入。工作目录放置同名干扰模块，另用隔离 Python 进程核实导入路径位于临时环境内。
 
-首次 CLI 退出后，父进程直接打开 SQLite，核对三条 fixture 的全部字段、WAL 与完整性，并对照 JSON 实际内容。第二次 CLI 重启不得增加记录或改变 JSON 字节；第三个只读进程从已安装包重新读取数据库。这里验证的是 demo 跨进程持久化，不是正式恢复协议。
+首次 CLI 退出后，父进程直接打开 SQLite，核对三条 fixture 的全部字段、WAL 与完整性，并对照 JSON 实际内容。第二次 CLI 重启不得增加记录或改变 JSON 字节；第三个只读进程从已安装包重新读取数据库。
 
 错误路径要求未知命令退出 2、输出目标为已有文件和数据库冲突退出 1。已有文件、冲突数据与上一次 JSON 必须保持原样。每个子进程有 60 秒上限，任一步异常均失败；临时环境在退出时清理。
 
-成功 wheel 留在 `dist/`；逐命令日志、SQLite 实际行值、导入位置和 wheel SHA-256 写入 `artifacts/package-check/summary.json`，正常 demo JSON 另存为 `demo-result.json`。这些路径是本地生成物，不作为文档本地链接。当前验证平台由 [验证记录](verification.md) 负责。
+成功 wheel 留在 `dist/`；SQLite 实际行值、导入位置和 wheel SHA-256 写入本次安装验收的 `summary.json`，正常 demo JSON 另存为 `demo-result.json`。当前验证平台由 [验证记录](verification.md) 负责。
+
+## 反馈与证据
+
+[evidence.py](../scripts/evidence.py) 为 check、demo、doctor 和独立 package-check 创建 `artifacts/verification/<类型>-<时间>-<随机标识>/`。完整 check 的环境和安装验收放在同次目录的 `doctor/`、`package/` 中，避免覆盖旧结果。
+
+- `summary.json`：HEAD、Git 管理及未忽略文件的内容指纹、实际解释器/平台/SQLite、开始与结束时间；逐命令参数、工作目录、预期与实际退出码、耗时、状态和日志路径。环境变量和凭据不写入报告。
+- `*.stdout.log`、`*.stderr.log`：子进程直接写入的原始输出；超时或中断前的内容仍保留。`*.log` 汇合完成后的两路输出，便于阅读。
+- 命令启动前落盘 `running`；启动失败、非预期退出、超时分别记录。中断遗留的 `running` 表示未完成，不能当作通过。超时终止进程树后记录实际退出码。
+- 任一检查失败、源码在验证期间改变或源码身份无法取得，整体返回非零。指纹覆盖新增、修改和删除，忽略 Git 忽略的生成物；阅读历史结果时必须核对源码身份。
+
+[test_feedback.py](../tests/test_feedback.py) 启动实际报错、超时、无法启动的命令，检查继续执行、退出码与持久日志；破坏构建后端验证后续安装不执行；改动源码验证旧结果不能证明新代码通过；阻塞数据库目录验证环境探针真实失败。
 
 ## 工程参考
 
@@ -37,5 +48,3 @@
 - [测试原则](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/docs/testing.md)：保留真实下游实现，外部读取实际结果。
 - [运行闭包负例](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/scripts/verify-runtime-closure.spec.ts)：破坏依赖关系后验证失败。
 - [构建 CLI 验收](https://github.com/deepseek-ai/deepseek-harness/blob/571902028a75c64c1d767f4ae5fd099485f0ddf0/apps/cli/tests/built-bin.e2e.ts)：执行构建入口并核对退出、输出与生命周期。
-
-本项目保留单个完整本地 check，不引入参考仓库的插件体系、覆盖率配额或专属 CI 调度。

@@ -23,4 +23,4 @@ CLI 参数错误退出 2；文件系统、SQLite 或 demo 校验错误退出 1�
 
 ## 开发工具边界
 
-[dev.py](../scripts/dev.py) 负责跨平台环境和检查入口；[repo_check.py](../scripts/repo_check.py) 负责本地文档链接与 CLI 声明检查。[package_check.py](../scripts/package_check.py) 负责 wheel 的隔离安装验收。这些脚本不随运行包安装。测试方法由 [测试说明](testing.md) 负责，依赖安装由 [开发环境](development.md) 负责。
+[dev.py](../scripts/dev.py) 负责跨平台环境和检查入口；[repo_check.py](../scripts/repo_check.py) 负责本地文档链接与 CLI 声明检查。[package_check.py](../scripts/package_check.py) 负责 wheel 的隔离安装验收。[evidence.py](../scripts/evidence.py) 记录命令生命周期、日志和源码身份，[doctor.py](../scripts/doctor.py) 实测环境前置条件。这些脚本不随运行包安装。测试方法由 [测试说明](testing.md) 负责，依赖安装由 [开发环境](development.md) 负责。

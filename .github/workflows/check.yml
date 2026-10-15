@@ -1,0 +1,41 @@
+name: Development checks
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: '3.14'
+      - name: Install locked tools
+        id: bootstrap
+        run: python scripts/dev.py bootstrap
+      - name: Check
+        run: python scripts/dev.py check
+      - name: Demo
+        if: ${{ !cancelled() && steps.bootstrap.outcome == 'success' }}
+        run: python scripts/dev.py demo
+      - name: Upload observed results
+        if: ${{ always() }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: evidence-${{ matrix.os }}
+          path: |
+            artifacts/verification/
+            artifacts/demo/result.json
+          if-no-files-found: warn

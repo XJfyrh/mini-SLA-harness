@@ -4,15 +4,14 @@
 
 ## 日常开发
 
-在仓库根目录执行；修改后运行完整 check 和 demo：
+首次或锁定依赖变化后执行 `python scripts/dev.py bootstrap`。在仓库根目录修改代码后运行：
 
 ```powershell
-python scripts/dev.py bootstrap
 python scripts/dev.py check
 python scripts/dev.py demo
 ```
 
-check 包含格式、lint、严格类型、仓库规则、全部 unittest、依赖一致性和 wheel 安装验收，任何一步失败都会返回非零退出码。单独重跑制品验收：
+check 先观察开发环境，再执行格式、lint、严格类型、仓库规则、全部 unittest、依赖一致性和 wheel 安装验收。独立检查全部执行并汇总失败，任一失败返回非零退出码；wheel 构建失败则停止依赖它的安装和运行。每次运行打印独立证据目录，格式见 [测试说明](testing.md)。单独重跑制品验收：
 
 ```powershell
 python scripts/dev.py package-check
@@ -27,6 +26,36 @@ python scripts/dev.py package-check
 ```
 
 `--json` 使 stdout 只包含 JSON。macOS/Linux 使用同一开发入口，直接 CLI 路径为 `.venv/bin/mini-sla`；若系统命令叫 `python3`，替换入口中的 `python`。实际测试平台见验证记录。
+
+## 按任务建立反馈
+
+| 任务 | 最早要取得的证据 | 完成条件 |
+| --- | --- | --- |
+| 修复错误 | 用真实入口、输入与副作用复现失败 | 原复现通过，相关负例仍失败，完整 check 和 demo 通过 |
+| 新增行为 | 写明可观察的输入、输出、失败行为；先跑最小纵向路径 | 行为测试检查结果和持久化内容，安装后的入口行为一致 |
+| 协议修改 | 对应 T 编号、受影响的不变量与故障触发点 | 实际注入故障并检查状态、产物和计量；更新负责该契约的正文 |
+| 外部集成或环境假设 | 最小真实探针，记录版本、响应、错误与耗时 | 探针结果支持继续实现，或据失败结果修订方案 |
+
+先执行与问题直接相关的检查，在局部闭环后运行完整验证。遇到重复失败时，检查原始输出与前提是否成立；不要靠扩大 mock、吞掉异常、自动 skip 或放宽断言消除失败。新增检查也应通过实际破坏规则来证明能发现问题。
+
+真实模型探索的调用范围、额度和停止条件见 [实施与验收](design/04-implementation-validation.md)。已有授权覆盖的可逆工作直接推进；需要新授权的调用先准备可审查的探针与配置。
+
+交付说明写明改动、实际执行的命令、证据路径和剩余失败。未运行的检查标为未运行；设计预期写在验收条件中。验证期间源码变化会使本次结果失败，需在稳定工作区重跑。
+
+## 尽早检查环境
+
+```powershell
+python scripts/dev.py doctor
+python scripts/dev.py doctor --target
+```
+
+doctor 实际观察 Python/SQLite/操作系统，并在临时数据库执行 WAL 写入、关闭连接、重开读取和完整性检查。默认退出码对应开发环境；`--target` 还要求 Linux 和 [状态协议要求的 SQLite 修复版本](design/03-state-transactions.md)。默认 check 也展示这两个目标条件的结果，开发检查与目标前置条件分别判定。
+
+容器权限、Unix socket 访问、跨进程锁、进程树取消和计时校准由 [早期探索](design/04-implementation-validation.md) 逐项验收；doctor 把尚未执行的项目列为 pending_runtime_probes。
+
+## 持续集成
+
+[工作流](../.github/workflows/check.yml) 在 Windows 和 Linux 上执行相同的 bootstrap、check、demo，并在失败时上传已产生的证据。两个平台各自完成检查；check 失败后仍执行 demo。bootstrap 需要 PyPI，后续入口使用本地锁定工具和固定 fixture。
 
 ## 安装机制
 

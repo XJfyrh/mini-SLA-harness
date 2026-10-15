@@ -1,5 +1,6 @@
 """Build a wheel and verify its real installed CLI in a fresh, disposable environment."""
 
+import argparse
 import hashlib
 import json
 import os
@@ -9,9 +10,13 @@ import subprocess
 import sys
 import tempfile
 import tomllib
-import venv
 from contextlib import closing
 from pathlib import Path
+
+if __package__ in {None, ""}:
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from scripts.evidence import Evidence
 
 ROOT = Path(__file__).resolve().parents[1]
 PROVIDER = "deterministic-fake-v1"
@@ -71,7 +76,8 @@ def rows_from_disk(database: Path) -> list[tuple[object, ...]]:
         ]
 
 
-def accept_wheel(root: Path, evidence: Path, steps: list[dict[str, object]]) -> dict[str, object]:
+def accept_wheel(root: Path, recording: Evidence) -> dict[str, object]:
+    evidence = recording.directory
     environment = {
         key: value
         for key, value in os.environ.items()
@@ -83,30 +89,9 @@ def accept_wheel(root: Path, evidence: Path, steps: list[dict[str, object]]) -> 
     def invoke(
         label: str, command: list[str], cwd: Path, expected_exit: int = 0
     ) -> subprocess.CompletedProcess[str]:
-        result = subprocess.run(
-            command,
-            cwd=cwd,
-            env=environment,
-            input="",
-            capture_output=True,
-            text=True,
-            encoding="utf-8",
-            errors="replace",
-            timeout=60,
-            check=False,
+        return recording.run(
+            label, command, cwd=cwd, environment=environment, expected_exit=expected_exit
         )
-        steps.append(
-            {"name": label, "command": command, "cwd": str(cwd), "exit_code": result.returncode}
-        )
-        (evidence / f"{label}.log").write_text(
-            result.stdout + "\n--- stderr ---\n" + result.stderr, encoding="utf-8", newline="\n"
-        )
-        require(
-            result.returncode == expected_exit,
-            f"{label}: expected exit {expected_exit}, got {result.returncode}; "
-            f"stdout={result.stdout[-2000:]!r}; stderr={result.stderr[-2000:]!r}",
-        )
-        return result
 
     with (root / "pyproject.toml").open("rb") as stream:
         project = tomllib.load(stream)["project"]
@@ -138,7 +123,7 @@ def accept_wheel(root: Path, evidence: Path, steps: list[dict[str, object]]) -> 
         require(len(wheels) == 1, "Build must produce exactly one wheel")
         wheel = wheels[0]
         clean = workspace / "venv"
-        venv.EnvBuilder(with_pip=True).create(clean)
+        invoke("create-environment", [sys.executable, "-m", "venv", str(clean)], root)
         python = clean / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
         cli = clean / ("Scripts/mini-sla.exe" if os.name == "nt" else "bin/mini-sla")
         outside = workspace / "outside-source"
@@ -250,13 +235,13 @@ def accept_wheel(root: Path, evidence: Path, steps: list[dict[str, object]]) -> 
 
 
 def main() -> int:
-    evidence = ROOT / "artifacts" / "package-check"
-    evidence.mkdir(parents=True, exist_ok=True)
-    steps: list[dict[str, object]] = []
-    report: dict[str, object] = {"status": "failed", "commands": steps}
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--evidence-dir", type=Path)
+    args = parser.parse_args()
+    recording = Evidence(ROOT, "package-check", args.evidence_dir)
+    error_message: str | None = None
     try:
-        report.update(accept_wheel(ROOT, evidence, steps))
-        report["status"] = "passed"
+        recording.report.update(accept_wheel(ROOT, recording))
     except (
         OSError,
         RuntimeError,
@@ -264,20 +249,11 @@ def main() -> int:
         KeyError,
         TypeError,
         subprocess.SubprocessError,
+        KeyboardInterrupt,
     ) as error:
-        report["error"] = str(error)
-    (evidence / "summary.json").write_text(
-        json.dumps(report, ensure_ascii=True, indent=2) + "\n", encoding="utf-8", newline="\n"
-    )
-    if report["status"] != "passed":
-        print(f"Package acceptance failed: {report['error']}", file=sys.stderr)
-        return 1
-    print(f"Package acceptance passed: {report['wheel']}")
-    print(
-        "Fresh wheel install, real CLI and SQLite restart verified; "
-        "failure paths passed and environment removed"
-    )
-    return 0
+        error_message = str(error) or "Interrupted"
+        print(f"Package acceptance failed: {error_message}", file=sys.stderr)
+    return recording.finish(error_message)
 
 
 if __name__ == "__main__":
