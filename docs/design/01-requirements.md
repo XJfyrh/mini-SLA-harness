@@ -17,11 +17,11 @@
 | 保留探索空间 | 新方向首个有效候选允许弱于全局最优；后续从该分支保留候选继续改进。 |
 | 可比较的研究效率 | 统一预算下比较不同会话和协调策略，报告结果曲线、成本、失败类型及不确定性。 |
 
-工程成功与研究效果分别验收：未找到更快实现不代表 Harness 失败；找到高分也不能掩盖恢复、隔离或计费缺陷。本文不承诺相对基线的性能优势，也不把“至少提高某个百分比”作为功能验收条件。
+工程验收检查恢复、隔离、计费和候选采纳的正确性；效果实验记录相对基线的实际变化及不确定性。无提升和负向结果同样进入报告。
 
 ## 2 设计决策与范围
 
-设计参考 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625) §2.2、§3、§5 和附录 B.1 的持久研究状态、全新 Advisor／Worker、并行与局部保留思路。工程实施按单 Worker→可靠恢复→Advisor／并行→消融推进。具体 Schema、CLI、可信 IPC 计时、防缓存、整数阈值和最终审计属于项目工程设计，不等同于论文公开协议或已证实效果。
+设计参考 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625) §2.2、§3、§5 和附录 B.1 的持久研究状态、全新 Advisor／Worker、并行与局部保留思路。实现从关键假设的真实探针和单 Worker 闭环开始，逐步增加恢复、Advisor 与并行；每项能力的交付证据由 [实施与验收](04-implementation-validation.md) 定义。
 
 | 编号 | 决策 | 本版处理 |
 | --- | --- | --- |
@@ -30,10 +30,10 @@
 | D-03 | 单机 Python、SQLite、CLI、独立评估器 | 一个控制器写库，WAL 模式；无 Redis 或跨机器调度。 |
 | D-04 | 三个 Worker，各方向连续尝试 | 建议上限 3 个槽位×每个 Assignment 3 次 Trial；参数可配置。 |
 | D-05 | 任务、交互与停止语义 | 固定 JSONL 语义、CLI 输出、Run 状态、排空及强制停止规则。 |
-| D-06 | 评估与准入阈值 | 独立进程预热2次、fresh-process测量5次、可信IPC中位数；整数bps默认100（ε=1%），仅作噪声过滤。 |
-| D-07 | 交付与效果证据分开 | 先 fake 验证预算/fencing/协议，再接真实模型、恢复、Advisor并发与公平消融。 |
+| D-06 | 评估与准入阈值 | 从独立进程预热2次、fresh-process测量5次、整数bps=100开始校准；根据 T-30 的实际噪声与敏感度冻结配置。 |
+| D-07 | 尽早取得真实反馈 | 环境/provider/计量探针与 fake 协议测试并行推进；持续自主运行满足对应阶段 Gate。 |
 
-目标 MVP 包含 TaskAdapter、AgentAdapter、StateStore、ArtifactStore、ContextBuilder、AdvisorScheduler、WorkerRuntime、ProtectedEvaluator 与 Orchestrator，保留 Advisor 和最多三个并行 Worker。交付先用 fake 验证事务、最小预算门控与 fencing，再形成单 Worker 纵向闭环、恢复、Advisor 与并发；这是降低调试复杂度的实施顺序，不是删除完整研究方案。真实模型先支持一个提供方。
+目标 MVP 包含 TaskAdapter、AgentAdapter、StateStore、ArtifactStore、ContextBuilder、AdvisorScheduler、WorkerRuntime、ProtectedEvaluator 与 Orchestrator，保留 Advisor 和最多三个并行 Worker。真实模型先支持一个提供方，使用小探针验证其实际契约；协议测试用 fake 重复触发事务、预算与 fencing 故障。单 Worker 闭环取得反馈后再增加恢复与并发能力。
 
 - 不做通用聊天助手、自然语言任意任务自动接入、多租户平台、网页后台或完整 REST 服务。
 
@@ -41,7 +41,7 @@
 
 - 不默认安装未知依赖，不让 Worker 修改评估器、保护测试、运行配置或其它 Worker 私有目录。
 
-- 不承诺完整复现论文效果；JSONL 单任务结果只能支持这个任务与实验条件下的判断。
+- 效果报告写明任务、模型、数据、预算与环境，结论对应实际实验范围。
 
 ## 3 用户旅程与 CLI 反馈
 
@@ -66,7 +66,7 @@ mini-sla resume run_001
 mini-sla export run_001 --out exports/run_001
 ```
 
-100000 Token 仅为命令示例，不代表推荐研究预算。控制台默认聚合重大变化，不逐条广播心跳、哈希校验和例行工具调用。详细过程通过 inspect 查阅。Token 未知时明确显示“待对账”，不能显示为 0。终端关闭与用户请求停止不同，不应无意重复开启 Run。
+运行时必须显式配置已授权的 Token 额度。控制台默认聚合重大变化，不逐条广播心跳、哈希校验和例行工具调用。详细过程通过 inspect 查阅。Token 未知时明确显示“待对账”，不能显示为 0。终端关闭与用户请求停止不同，不应无意重复开启 Run。
 
 若新候选都未通过，可导出已验证起始基线并注明“无有效改进”；其搜索验证不替代最终审计。正常预算结束或无提升不属于 CLI 故障。候选最终审计失败显示 REJECTED，设施耗尽显示 INCONCLUSIVE；配置错误、状态损坏和不可恢复环境错误返回非零退出码。
 
@@ -119,11 +119,11 @@ def aggregate(data: bytes) -> list[tuple[str, int, int, int]]:
 | 无效输入 | 任何一行编码、JSON、必需字段不合法，整个调用抛 ValueError；不返回部分结果；错误文字不参与判等。 |
 | 调用独立性 | 不得依赖上次调用、输入对象地址、调用次序或固定数据答案；同内容不同 bytes 实例应返回相同结果。 |
 
-正确性集覆盖大／小用户基数、Unicode、金额边界、空输入、重复记录、无尾换行、无效记录，以及同进程多次调用和同内容不同 bytes 实例。正式性能每个样本使用全新候选进程，只调用一次 aggregate；两次预热使用独立进程和独立输入，不给五次测量预填缓存。五份固定、互异的测量输入对同一 Run 的所有候选一致，清单和顺序纳入私有评估指纹。公开开发、正式反馈、最终审计数据分离；审计结果不得回流搜索。
+正确性集覆盖大／小用户基数、Unicode、金额边界、空输入、重复记录、无尾换行、无效记录，以及同进程多次调用和同内容不同 bytes 实例。正式性能每个样本使用全新候选进程，只调用一次 aggregate；预热使用独立进程和独立输入，不给正式测量预填缓存。固定、互异的测量输入对同一 Run 的所有候选一致，清单和顺序纳入私有评估指纹。采样次数按 T-30 校准后冻结。公开开发、正式反馈、最终审计数据分离；审计结果不得回流搜索。
 
 ## 6 正式评估与采纳规则
 
-主指标为受控协议下的 end_to_end_records_per_second，越高越好。可信 supervisor 用单调时钟从发送输入帧前计时，到完整、有大小上限的输出帧收齐后结束；计时包括 IPC、解析、聚合、排序、输出编码及传输，不采用候选报告的时间，也不事后减去 IPC。容器启动、import、输入生成和参考答案计算在计时外；候选在计时开始前接触不到本次输入。2 次独立预热后，对 5 个全新进程的一次性调用分别测量，取吞吐量中位数。记录 elapsed_ns、记录数、字节数、进程身份、原始样本、峰值 RSS 和指纹；超时包含协议等待。此口径测量的是完整接口吞吐量，不声称是纯函数内部耗时。
+主指标为受控协议下的 end_to_end_records_per_second，越高越好。可信 supervisor 用单调时钟从发送输入帧前计时，到完整、有大小上限的输出帧收齐后结束；计时包括 IPC、解析、聚合、排序、输出编码及传输，不采用候选报告的时间，也不事后减去 IPC。容器启动、import、输入生成和参考答案计算在计时外；候选在计时开始前接触不到本次输入。独立预热后，对全新进程的一次性调用分别测量，取吞吐量中位数。记录 elapsed_ns、记录数、字节数、进程身份、原始样本、峰值 RSS 和指纹；超时包含协议等待。
 
 只有正式正确性通过且性能测量有效的候选才有可比较 score。BUILD_FAIL、INCORRECT、CANDIDATE_TIMEOUT 和 CANDIDATE_RESOURCE_LIMIT 是候选 verdict，score 为 null；INFRA_ERROR 属于评估 attempt 的设施错误，按有界策略重试而不伪造候选成绩。Worker 自测不能成为晋升依据。正式性能测量在独立槽位执行，避免编程负载争用主导评分。
 
@@ -152,6 +152,6 @@ def aggregate(data: bytes) -> list[tuple[str, int, int, int]]:
 
 ## 8 默认决策
 
-本版默认选择单机 CLI、Python、SQLite WAL、一个控制器、三个可配置执行槽位、每 Assignment 最多三个 Trial、先 fake 后真实模型、2 次独立进程预热＋5 次 fresh-process 协议测量中位数、min_improvement_bps=100（ε=1%）、pause／stop 排空当前 Trial。它们是为了尽快形成可验证闭环的建议，不是已经实现的能力。
+本版选择单机 CLI、Python、SQLite WAL、一个控制器、三个可配置执行槽位、每 Assignment 最多三个 Trial，以及 pause／stop 排空当前 Trial。2 次独立进程预热、5 次 fresh-process 测量和 min_improvement_bps=100 为 T-30 的校准起点。
 
-实现前需固定真实模型适配器、可用 Token 预算、评估机器规格、数据规模与容器镜像。若暂时没有用户偏好，先使用 fake 适配器和固定本地样例推进协议开发；真实付费运行前必须使用用户配置的模型与额度。
+真实模型探针使用用户已配置的模型与额度；协议实现可先用 fake 和公开小样例推进。性能实验在环境与计量探针通过后，冻结模型适配器、预算、机器规格、数据和容器镜像。

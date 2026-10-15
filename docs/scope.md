@@ -8,7 +8,7 @@
 
 TaskSpec、权威 StateStore、不可变候选快照、独立可信评估、预算预留与 UNKNOWN 对账、controller/attempt fencing、强停竞态、暂停/恢复、Advisor 规划、Workers 并发、最终审计与消融实验仍待实现。当前 demo 表不是正式 StateStore schema。
 
-下一步先补齐 M0 的契约与协议测试；真实 API 接入另行安排。本轮离线基础设施通过不表示 M0 Gate 通过。未来 Linux 进程隔离、可信计时和并发验收须另行实施。
+下一步同时取得目标环境、provider 契约和最小编辑—评估链路的真实反馈，并实现 M0 协议测试。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。Linux 隔离、可信计时、并发和模型效果分别需要实际验收记录。
 
 ## 设计文档
 

@@ -1,34 +1,27 @@
 # 实际验证记录
 
-2026-10-15，在 `E:\dev\mini-SLA-harness` 的 `chore/repo-verification` 分支执行。平台为 Windows x64、Python 3.14.7、SQLite 3.50.4。
+2026-10-15，分支 `XJfyrh/agent-feedback`，Windows x64、Python 3.14.7、SQLite 3.50.4。
 
-## 本轮结果
-
-| 验证对象 | 实际结果 |
+| 命令或检查 | 实际结果 |
 | --- | --- |
-| 项目环境 bootstrap | 锁定依赖、editable 安装和 pip check 成功 |
-| 格式 / lint / 严格类型 | Ruff format、Ruff check、Mypy strict 全部通过 |
-| 仓库规则 | 本地文档链接与 CLI 声明/AST 解析通过 |
-| 全部 unittest | 20 项通过：原有 11 项行为测试，新增 9 项仓库检查测试 |
-| 规则负例 | 删除导航文件、断链、越出仓库、缺失声明/模块/函数、畸形 TOML/Python 均被拒绝；命令失败后修复可恢复成功 |
-| wheel 构建与安装 | 构建普通 wheel，在项目内全新 venv 仅安装本次 wheel；未复用 editable 环境 |
-| 真正安装的 CLI | 从独立临时工作目录执行，版本/帮助/demo 退出 0；导入文件位于临时 site-packages，未导入 src |
-| SQLite 与重启 | 外部读取 3 条完整 fixture、WAL 与完整性；第二次 CLI 不重复写入，第三个只读进程读回一致 |
-| JSON | 实际内容与已知 fixture 一致，重启运行逐字节相同 |
-| 安装后失败边界 | 未知命令退出 2；已有文件目标、数据库冲突退出 1；既有文件/行值/上次 JSON 保持原样 |
-| 资源清理 | 安装验收创建的临时环境与工作目录已清理 |
+| `python scripts/dev.py check` | 通过：环境、格式、lint、严格类型、仓库规则、32 项 unittest、依赖一致性、wheel 安装验收 |
+| `python scripts/dev.py demo` | 通过：3 条固定记录、实际 SQLite 重开读取、稳定 JSON |
+| `.venv/Scripts/python.exe -m mypy --platform linux` | Linux 类型分支检查通过 |
+| `python scripts/dev.py doctor --target` | 退出 1：目标要求 Linux，当前为 Windows；SQLite 3.50.4 未达到要求的 WAL-reset 修复版本 |
+| Windows/Linux GitHub Actions | 已配置；尚未推送或执行云端工作流 |
 
-完整 check 已包含 wheel 验收；运行命令见 [开发指南](development.md)，方法与解析范围见 [测试说明](testing.md)。
+新增的 12 项反馈测试通过真实子进程、数据库和文件变更验证：
 
-## 可检查的交付证据
+- 多项检查失败后继续执行，汇总保留各自退出码。
+- 命令启动前已有 `running` 记录；无法启动时保存具体失败。
+- 超时前的 stdout/stderr 保留；父命令超时后，实际孙进程的监听端口关闭。
+- 预期错误退出码可通过验收，错误地返回成功会被拒绝。
+- 每次运行证据目录独立；源码变化、未跟踪文件变化和错误仓库归属能被识别。
+- wheel 构建失败后不启动安装；环境探针遇到真实目录冲突时失败并保留原文件。
+- SQLite 版本检查区分已修复分支及相邻未修复版本。
 
-- `dist/mini_sla_harness-0.0.1-py3-none-any.whl`：最后一次成功验收构建的 wheel。
-- `artifacts/package-check/summary.json`：wheel SHA-256、真实导入位置、工作目录、实际数据库行值、错误退出和清理结果；同目录含逐命令日志与正常 `demo-result.json`。
-- `artifacts/verification/summary.json`：最终 HEAD、分支、各入口退出码、实际测试数量、制品证据与工作区状态。
-- `artifacts/verification/check.log`、`bootstrap.log`、`demo.log`：最终提交上的完整运行日志。
+安装验收继续验证全新 venv、已安装 CLI、真实导入位置、数据库完整行值、跨进程重开、JSON 字节稳定，以及未知命令、已有文件和数据库冲突的失败行为。
 
-这些是本地生成物，不进入 Git。临时环境路径保留在证据中用于审计，验收结束后路径本身已不存在。
+每次执行输出对应的证据目录，`summary.json` 记录 HEAD 与开始/结束源码指纹；日志和结果格式见 [测试说明](testing.md)。历史记录只证明其记录的源码与环境，检查当前代码时重新运行 [开发入口](development.md)。
 
-## 验证边界
-
-本轮使用确定性 fake、真实 SQLite 与实际安装制品，没有真实模型调用或研究效果测量。当前结果证明开发与安装链路，协议范围由 [设计范围](scope.md) 负责。其他操作系统尚未实机验证，链接检查不验证外部站点与标题锚点。
+目标运行环境的下一步是：在 Linux 上选择含 WAL-reset 修复的 Python/SQLite 组合，重跑 `doctor --target`，再逐项执行 [早期环境与集成探针](design/04-implementation-validation.md)。当前尚未运行真实模型、目标容器隔离或性能校准。

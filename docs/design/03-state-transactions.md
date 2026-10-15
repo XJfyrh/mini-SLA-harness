@@ -71,7 +71,7 @@ ON usage_ledger(call_id);
 
 候选与 Run 存在循环引用时，创建 Run 先不设置 best，再注册 baseline 并完成评估。SQLite 每个连接启用 foreign_keys=ON；采用 WAL、synchronous=FULL 与有限 busy_timeout。WAL 支持读写并发，但同时只有一个写入者且依赖本机存储；FULL 在提交时同步 WAL。[SQLite WAL](https://sqlite.org/wal.html) 单写入队列执行短事务，BEGIN IMMEDIATE 的争用须有界处理。[SQLite 事务](https://sqlite.org/lang_transaction.html) 数据库事务内禁止网络 await、模型调用和评估执行。
 
-部署验收记录 Python 实际 sqlite_version，使用含官方 WAL-reset 修复的版本：3.51.3 及以后，或已回移修复的 3.44.6/3.50.7 分支。[SQLite WAL](https://sqlite.org/wal.html) Checkpoint 与写入由同一控制器协调，避免依赖未知系统版本。
+目标环境探针先运行 `python scripts/dev.py doctor --target`，记录 Python 实际 sqlite_version；要求含官方 WAL-reset 修复的版本：3.51.3 及以后，或 3.44 分支的 3.44.6+、3.50 分支的 3.50.7+。[SQLite WAL-reset 修复](https://sqlite.org/wal.html#walresetbug) 版本不足时停止相关多连接写入/Checkpoint 验收，升级后重跑。Checkpoint 与写入由同一控制器协调。
 
 ## 3 生命周期与调度屏障
 
@@ -134,7 +134,7 @@ StateStore 是唯一变更入口。Worker 无数据库和正式分数写权限�
 
 ## 5 评分口径与 FinalizeTrial
 
-SEARCH 和 BASELINE 使用相同计时口径：2 次独立进程／输入预热，5 次全新进程一次调用；可信 supervisor 的 monotonic_ns 从输入帧发送前到完整限长输出帧接收后计时，包含 IPC 与序列化。输入此前不可见；各样本之间无可写共享状态。令样本吞吐量为 record_count×10^9/elapsed_ns，以精确有理数选中位数再 floor(×1000) 得 score_i；保存计时原值、输入清单身份、process_instance_id、单位、输出 hash、环境指纹。elapsed_ns<=0、非法值、溢出、错误输出均不得 VALID_SCORED；计时不接受候选自报。
+SEARCH 和 BASELINE 使用相同计时口径：独立进程／输入预热，正式样本均为全新进程一次调用，次数按 [T-30](04-implementation-validation.md) 校准并冻结；可信 supervisor 的 monotonic_ns 从输入帧发送前到完整限长输出帧接收后计时，包含 IPC 与序列化。输入此前不可见；各样本之间无可写共享状态。令样本吞吐量为 record_count×10^9/elapsed_ns，以精确有理数选中位数再 floor(×1000) 得 score_i；保存计时原值、输入清单身份、process_instance_id、单位、输出 hash、环境指纹。elapsed_ns<=0、非法值、溢出、错误输出均不得 VALID_SCORED；计时不接受候选自报。
 
 提升条件统一为 new−old≥max(1,(abs(old)×min_improvement_bps+9999)//10000)，bps 为 Run 固定整数，默认 100 即 1%。新 Branch 首个有效 SEARCH 结果无提升门槛；Head 与 Global 独立比较。DONE 成绩不可改写，主动复测新建 job；BASELINE 仅用于初始化，FINAL_AUDIT 只记录审计，均不走 Trial 晋升。Global Best 为按阈值晋升的 incumbent，raw 最大值另报；近似结果完成顺序可能影响选择，MVP 保留此限制。
 
@@ -257,7 +257,7 @@ Advisor 证据在短读事务获取 run.version／event_seq，生成不可变 co
 
 ## 10 实现验收与不变量测试
 
-以下是待实现的验收用例，不表示已经运行或通过。优先以 fake Worker/Evaluator/provider 验证状态协议，再接真实模型。故障注入必须覆盖文件发布、数据库提交和外部请求三个边界。
+以下用例随对应状态协议实现验收。fake Worker/Evaluator/provider 用于重复触发故障；真实集成按 [早期探索](04-implementation-validation.md) 尽早验证。故障注入覆盖文件发布、数据库提交和外部请求三个边界。
 
 | 用例 | 必须观察到的结果 |
 | --- | --- |
@@ -280,9 +280,7 @@ Advisor 证据在短读事务获取 run.version／event_seq，生成不可变 co
 
 实现完成的核心证据是：每个 Best 可定位精确代码和正式评估，每次失败／重复调用可定位真实成本，每个初始化／规划／执行状态有可解释恢复路径。FreezeFinal 在搜索终态原子冻结 final_candidate_id、export_manifest_hash、audit_spec_hash，建立一个独立 FINAL_AUDIT job；只能写 audit_record，禁止写 Branch／Trial／Best。审计正确且性能测量有效为 PASSED；候选错误为 REJECTED；设施重试耗尽为 INCONCLUSIVE。报告显示搜索成绩与审计成绩各自的数据／环境身份，不直接混排；失败只发布明确未验证的研究记录，不能悄悄选择另一候选继续试。 若基线从未有效且 Best 为空，则不创建审计，导出 NO_CANDIDATE 与失败／强停原因；不能虚构最终成果。
 
-## 11 技术依据与适用范围
+## 11 技术依据
 
 - [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)：WAL 并发、本机存储和同步语义。
 - [SQLite Transaction](https://sqlite.org/lang_transaction.html)：事务控制与写入争用语义。
-
-本文 Schema、命令、整数 bps 阈值、可信 IPC 计时、防缓存、attempt/fencing、预算细化、初始化／规划恢复和独立最终审计均为工程设计，不是论文实验结果。官方 SQLite 文档只支持相应存储事实，不直接提供这些应用层协议。

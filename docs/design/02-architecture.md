@@ -6,7 +6,7 @@
 
 ## 1 架构决策与运行边界
 
-SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属上下文、局部分支与全局最优、独立评估和单机 CLI；研究背景见 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625)。生命周期、计量与故障边界是本项目的协议设计，不是论文公布的数据库或 API。
+SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属上下文、局部分支与全局最优、独立评估和单机 CLI；研究背景见 [Stateless Language Agents 论文](https://arxiv.org/abs/2610.07625)。
 
 | 决策 | 本版约定 | 原因与后续边界 |
 | --- | --- | --- |
@@ -15,8 +15,8 @@ SLA 指 Stateless Language Agents。系统采用无状态调用、角色专属�
 | ADR 03 执行 | Python asyncio 调度，沙箱子进程执行 | 模型调用与评估均不占数据库写事务 |
 | ADR 04 候选 | 内容寻址快照为权威；Git 可选用于 diff | 哈希对应真实可恢复代码；Git worktree 本身不提供隔离 |
 | ADR 05 评估 | 正式性能评估串行；编程 Worker 可并行 | 避免多个 benchmark 互相争抢 CPU 影响排名 |
-| ADR 06 范围 | 一个 TaskAdapter 与一个真实模型适配器先交付 | 先用 FakeAgent 验证协议；多供应商留在接口层 |
-| ADR 07 统计 | 固定评估指纹与整数 bps 提升阈值（默认 100，即 1%） | 降低微小测量噪声影响；不等同于显著性检验 |
+| ADR 06 范围 | 一个 TaskAdapter 与一个真实模型适配器先交付 | 小探针验证真实集成，FakeAgent 验证协议故障；多供应商留在接口层 |
+| ADR 07 统计 | 固定评估指纹与整数 bps 提升阈值 | 先按 T-30 校准噪声与敏感度，再冻结阈值与采样参数 |
 
 默认规模是 1 个 Advisor、最多 3 个并行 Worker 槽位、每 Assignment 最多 3 次逻辑 Trial。它们都是可配置上限；一个 Trial 内可包含多次模型调用与公开测试，不能将 Trial 数当作模型调用数。MVP 不使用 Redis、向量数据库、微服务、Kubernetes 或 Worker 直接互发消息。
 
@@ -158,15 +158,15 @@ WorkerReport 只含 experiment_summary、hypothesis、public_checks、artifact_r
 
 ## 6 执行隔离与评分可信边界
 
-推荐以主机侧 Agent Runner 调用模型，工具执行下沉到非特权容器。容器只挂载公开任务与本 Trial 工作区，根文件系统只读，临时目录有大小限制，禁网、drop capabilities、no-new-privileges、限制 CPU、内存、进程数和 wall-clock。不给候选挂载 Docker socket、StateStore、本地控制 socket、主机 HOME 或模型 API 密钥。容器的隔离强度取决于配置和宿主内核，MVP 面向受信任操作者的单机研究，不承诺抵御内核漏洞或提供公网多租户安全。[S5]
+主机侧 Agent Runner 调用模型，工具在非特权容器执行。容器只挂载公开任务与本 Trial 工作区，根文件系统只读，临时目录有大小限制，禁网、drop capabilities、no-new-privileges、限制 CPU、内存、进程数和 wall-clock。不给候选挂载 Docker socket、StateStore、本地控制 socket、主机 HOME 或模型 API 密钥。环境探针须实际尝试越权读取、联网、超额资源和停止子进程树，并记录拒绝结果；升级镜像或隔离配置后复跑。[S5]
 
 允许读的源码与允许改的源码分开描述。冻结时遍历规范化路径，拒绝路径穿越、符号链接、设备节点及指向工作区外的引用；仅收集白名单文件，限制文件数量和总字节数。用新候选重新物化到全新评估沙箱，禁止对仍可写工作区评分。
 
 可信测试驱动在沙箱外，通过长度前缀输入帧发送本次 bytes，候选 runner 返回长度前缀的规范 JSON 结果或受控异常码；stdout 只用于协议、stderr 限长保存，超长／额外帧／畸形输出判协议失败。候选不获得参考答案、私有集、时钟写接口或计分凭证。supervisor 在发送帧前读取 monotonic_ns，完整输出帧接收后再读时钟，随后可信解码并与预计算参考答案比较；候选报告的 time／score 字段无效。IPC 与输出序列化包含在主指标中，不扣基准开销。 畸形／额外帧归 INCORRECT 并附 PROTOCOL_VIOLATION，超大帧归 CANDIDATE_RESOURCE_LIMIT，等待超时归 CANDIDATE_TIMEOUT；均无有效分数。
 
-性能测量使用独占资源槽和固定镜像／CPU 集／环境。两次 warmup 各在独立新进程使用独立输入，仅预热宿主与镜像缓存；五次正式样本也分别新建进程，import 与 READY 握手在计时外，但本次输入在计时前不发送、不挂载。每个进程一次 aggregate 后销毁；样本之间不共享可写磁盘、内存或缓存。五个互异输入由冻结 manifest 决定，对所有候选顺序一致；正确性另测重复调用与内容等价实例。无法隔离编程负载时在测量窗口暂停它们；不把同进程反复运行同一输入的缓存命中当优化收益。
+性能测量使用独占资源槽和固定镜像／CPU 集／环境。warmup 各在独立新进程使用独立输入，预热宿主与镜像缓存；正式样本也分别新建进程，import 与 READY 握手在计时外，但本次输入在计时前不发送、不挂载。每个进程一次 aggregate 后销毁；样本之间不共享可写磁盘、内存或缓存。互异输入由冻结 manifest 决定，对所有候选顺序一致；正确性另测重复调用与内容等价实例。无法隔离编程负载时在测量窗口暂停它们。预热与正式样本数从 2/5 开始，按 [T-30](04-implementation-validation.md) 校准后冻结，正式样本数取不小于 3 的奇数。
 
-主指标 end_to_end_records_per_second：各样本 r=N×10^9/elapsed_ns，五个样本取精确有理数中位数，score_i=floor(r_median×1000)，不先四舍五入浮点数。阈值为 old+max(1,(abs(old)×min_improvement_bps+9999)//10000)，默认 bps=100；用任意精度整数并校验最终 int64。新分支首个有效候选直接成为 Head。bps 为 0～10000 的整数，进入 scoring policy 与 evaluation_spec_hash；修改需新 Run，阈值不代表显著性。
+主指标 end_to_end_records_per_second：各样本 r=N×10^9/elapsed_ns，取精确有理数中位数，score_i=floor(r_median×1000)，不先四舍五入浮点数。阈值为 old+max(1,(abs(old)×min_improvement_bps+9999)//10000)；用任意精度整数并校验最终 int64。新分支首个有效候选直接成为 Head。bps 为 0～10000 的整数，校准后进入 scoring policy 与 evaluation_spec_hash；修改需新 Run。
 
 ## 7 配置与扩展点
 
@@ -215,7 +215,7 @@ AdapterCapabilities 必须声明 fresh_session、usage_reporting、per_call_limi
 
 ## 9 参考与关联文档
 
-- Zhang 等，[Stateless Language Agents: Scaling Long-Horizon Automated Research](https://arxiv.org/abs/2610.07625)，arXiv:2610.07625v1。只采用架构思想，不将论文性能结果当作本项目预期指标。
+- Zhang 等，[Stateless Language Agents: Scaling Long-Horizon Automated Research](https://arxiv.org/abs/2610.07625)，arXiv:2610.07625v1：会话生命周期、持久研究状态、并行探索与局部保留。
 - [SQLite Write-Ahead Logging](https://sqlite.org/wal.html)：WAL 并发与本机存储约束。
 - [SQLite Transaction](https://sqlite.org/lang_transaction.html)：事务与忙重试语义。
 - [Docker Engine security](https://docs.docker.com/engine/security/)：容器隔离及守护进程权限边界。
