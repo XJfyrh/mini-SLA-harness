@@ -284,6 +284,67 @@ class ProtocolTests(unittest.TestCase):
             self.assertEqual(row(run.store.snapshot(), "runs")["status"], "FAILED")
             self.assertEqual(row(run.store.snapshot(), "evaluations")["state"], "FAILED")
 
+    def test_started_baseline_drains_retries_through_pause_stop_and_reopen(self) -> None:
+        for command in ("Pause", "Stop"):
+            for interrupted in ("infra", "reopen"):
+                with (
+                    self.subTest(command=command, interrupted=interrupted),
+                    OfflineRun(self.root / f"{command}-{interrupted}") as run,
+                ):
+                    if interrupted == "infra":
+                        run.evaluate("baseline-evaluation", None, "INFRA_ERROR")
+                    else:
+                        run.claim("ClaimEvaluation", "evaluation_id", "baseline-evaluation")
+                    run.command(command)
+                    run.reopen()
+                    expected = "PAUSING" if command == "Pause" else "STOPPING"
+                    self.assertEqual(row(run.store.snapshot(), "runs")["status"], expected)
+                    run.evaluate("baseline-evaluation", 90000)
+                    run.command("InitializeBaseline")
+                    run.reopen()
+                    snapshot = run.store.snapshot()
+                    self.assertEqual(row(snapshot, "runs")["best_score"], 90000)
+                    self.assertEqual(
+                        row(snapshot, "runs")["status"],
+                        "PAUSED" if command == "Pause" else "COMPLETED",
+                    )
+                    self.assertEqual(row(snapshot, "evaluations")["state"], "DONE")
+
+    def test_drain_reclaims_only_started_trial_after_reopen(self) -> None:
+        for stop_before_reopen in (True, False):
+            with (
+                self.subTest(stop_before_reopen=stop_before_reopen),
+                OfflineRun(self.root / str(stop_before_reopen)) as run,
+            ):
+                run.initialize()
+                run.accept_plan(count=2)
+                run.trial()
+                run.command(
+                    "CreateTrial",
+                    {"trial_id": "unstarted", "assignment_id": "assignment-1", "budget_limit": 100},
+                )
+                if stop_before_reopen:
+                    run.command("Stop")
+                run.reopen()
+                if not stop_before_reopen:
+                    run.command("Stop")
+                snapshot = run.store.snapshot()
+                self.assertEqual(row(snapshot, "runs")["status"], "STOPPING")
+                self.assertEqual(row(snapshot, "trials", "trial")["state"], "PENDING")
+                self.assertEqual(row(snapshot, "trials", "unstarted")["state"], "CANCELLED")
+                with self.assertRaises(ProtocolError):
+                    run.claim("ClaimTrial", "trial_id", "unstarted")
+                attempt = run.claim("ClaimTrial", "trial_id", "trial")
+                run.finish("trial", attempt, 95000)
+                run.reopen()
+                snapshot = run.store.snapshot()
+                self.assertEqual(row(snapshot, "runs")["status"], "COMPLETED")
+                self.assertEqual(row(snapshot, "runs")["best_score"], 95000)
+                self.assertEqual(row(snapshot, "assignments")["state"], "DONE")
+                self.assertEqual(row(snapshot, "assignments")["skipped"], 2)
+                self.assertEqual(row(snapshot, "assignments", "assignment-1")["skipped"], 3)
+                self.assertEqual(row(snapshot, "epochs")["state"], "CLOSED")
+
     def test_unknown_cannot_be_released_and_usage_breach_is_not_truncated(self) -> None:
         with OfflineRun(self.root / "run", budget=100) as run:
             run.initialize()

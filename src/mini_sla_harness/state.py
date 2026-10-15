@@ -840,8 +840,17 @@ class StateStore(AbstractContextManager["StateStore"]):
         return {"trial_id": trial, "base_candidate_id": base}
 
     def _claim_trial(self, p: Object, who: Principal) -> Object:
-        self._running()
         trial = self._one("trials", text(p, "trial_id"))
+        run = self._run()
+        started = self._rows(
+            "SELECT id FROM attempts WHERE kind='TRIAL' AND object_id=?", (trial["id"],)
+        )
+        require(
+            (run["status"] == "RUNNING" and run["stop_mode"] == "NONE")
+            or (run["status"] == "STOPPING" and run["stop_mode"] == "DRAIN" and bool(started)),
+            "STATE_CONFLICT",
+            "Only an already-started Trial may be reclaimed while draining",
+        )
         require(trial["state"] in {"PENDING", "RUNNING"}, "STATE_CONFLICT", "Trial not claimable")
         result = self._claim("TRIAL", text(trial, "id"), p, who)
         if "error_code" in result:
@@ -1255,7 +1264,15 @@ class StateStore(AbstractContextManager["StateStore"]):
         active = self._rows(
             "SELECT id FROM trials WHERE state IN ('RUNNING','CANDIDATE_READY','EVALUATING')"
         )
-        active += self._rows("SELECT id FROM evaluations WHERE state='RUNNING'")
+        if run["stop_mode"] == "DRAIN":
+            active += self._rows(
+                "SELECT t.id FROM trials t WHERE t.state='PENDING' AND EXISTS "
+                "(SELECT 1 FROM attempts a WHERE a.kind='TRIAL' AND a.object_id=t.id)"
+            )
+        active += self._rows(
+            "SELECT id FROM evaluations WHERE state='RUNNING' OR "
+            "(purpose='BASELINE' AND started=1 AND state='QUEUED')"
+        )
         active += self._rows("SELECT id FROM invocations WHERE state='REQUESTING'")
         baseline = self._one("evaluations", text(run, "baseline_id"))
         if run["best_candidate"] is None and baseline["state"] == "DONE":
@@ -1315,7 +1332,10 @@ class StateStore(AbstractContextManager["StateStore"]):
         self._write(
             "UPDATE runs SET status='STOPPING',stop_mode='DRAIN',completion_reason=?", (reason,)
         )
-        self._write("UPDATE trials SET state='CANCELLED' WHERE state='PENDING'")
+        self._write(
+            "UPDATE trials SET state='CANCELLED' WHERE state='PENDING' AND NOT EXISTS "
+            "(SELECT 1 FROM attempts a WHERE a.kind='TRIAL' AND a.object_id=trials.id)"
+        )
         self._write(
             "UPDATE invocations SET state='CANCELLED' WHERE state IN "
             "('PLANNED','REQUESTING','PLAN_RECEIVED')"
