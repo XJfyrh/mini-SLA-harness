@@ -12,7 +12,7 @@ M0 使用假分数与模拟 token 用量，外部模型请求为零；`research_
 
 M1 的真实编辑—评估链路、ContextBuilder、模型适配器与目标执行器，M2 的完整生命周期/崩溃矩阵，M3 的真实 Advisor 与 Worker 调度并发，以及 M4 的审计与消融实验仍待实现。M0 的状态测试不替代这些运行时能力；原有 demo 表仍不属于 StateStore schema。
 
-下一步取得 Docker Desktop/WSL2 执行边界、provider 契约和最小编辑—评估链路的真实反馈。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。默认开发解释器与隔离目标解释器的 SQLite 结果分别记录在 [验证记录](verification.md)，不把单个解释器通过扩展为整机已升级。
+下一步取得 Docker Desktop/WSL2 执行边界、provider 契约和最小编辑—评估链路的真实反馈。探索按 [实施与验收](design/04-implementation-validation.md) 的前置条件推进；持续自主运行逐阶段满足对应 Gate。Windows x64 的默认 M0 验收使用 [固定仓库运行时](development.md#尽早检查环境)，开发工具仍使用 `.venv`；实际结果记录在 [验证记录](verification.md)，不把单个解释器通过扩展为整机已升级。
 
 ## 设计文档
 

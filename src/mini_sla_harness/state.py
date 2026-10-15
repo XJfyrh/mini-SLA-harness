@@ -638,14 +638,7 @@ class StateStore(AbstractContextManager["StateStore"]):
         generation = integer(previous[0], "generation") + 1 if previous else 1
         if generation > 3:
             if kind == "EVALUATION":
-                job = self._one("evaluations", identifier)
-                self._write("UPDATE evaluations SET state='FAILED' WHERE id=?", (identifier,))
-                self._write("UPDATE trials SET state='FAILED' WHERE evaluation_id=?", (identifier,))
-                if job["purpose"] == "BASELINE":
-                    self._write(
-                        "UPDATE runs SET status='FAILED',"
-                        "completion_reason='BASELINE_INFRA_EXHAUSTED'"
-                    )
+                self._fail_evaluation(self._one("evaluations", identifier))
             else:
                 self._fail_scope(self._one("budget_scopes", identifier), "RETRY_EXHAUSTED")
             return {"error_code": "RETRY_EXHAUSTED", "message": identifier}
@@ -948,17 +941,10 @@ class StateStore(AbstractContextManager["StateStore"]):
         if verdict == "INFRA_ERROR":
             exhausted = integer(attempt, "generation") >= 3
             self._write("UPDATE attempts SET state='FAILED' WHERE id=?", (attempt["id"],))
-            self._write(
-                "UPDATE evaluations SET state=? WHERE id=?",
-                ("FAILED" if exhausted else "QUEUED", job["id"]),
-            )
             if exhausted:
-                self._write("UPDATE trials SET state='FAILED' WHERE evaluation_id=?", (job["id"],))
-                if job["purpose"] == "BASELINE":
-                    self._write(
-                        "UPDATE runs SET "
-                        "status='FAILED',completion_reason='BASELINE_INFRA_EXHAUSTED'"
-                    )
+                self._fail_evaluation(job)
+            else:
+                self._write("UPDATE evaluations SET state='QUEUED' WHERE id=?", (job["id"],))
             return {"evaluation_id": job["id"], "state": "FAILED" if exhausted else "QUEUED"}
         require(
             verdict
@@ -984,6 +970,18 @@ class StateStore(AbstractContextManager["StateStore"]):
         )
         self._write("UPDATE attempts SET state='SUCCEEDED' WHERE id=?", (attempt["id"],))
         return {"evaluation_id": job["id"], "verdict": verdict, "score_i": score}
+
+    def _fail_evaluation(self, job: Object) -> None:
+        self._write("UPDATE evaluations SET state='FAILED' WHERE id=?", (job["id"],))
+        self._write("UPDATE trials SET state='FAILED' WHERE evaluation_id=?", (job["id"],))
+        if job["purpose"] == "BASELINE":
+            self._write(
+                "UPDATE runs SET status='FAILED',completion_reason='BASELINE_INFRA_EXHAUSTED'"
+            )
+        else:
+            for trial in self._rows("SELECT * FROM trials WHERE evaluation_id=?", (job["id"],)):
+                self._finish_assignment(text(trial, "assignment_id"))
+        self._pause_barrier()
 
     def _finalize(self, p: Object, who: Principal) -> Object:
         trial = self._one("trials", text(p, "trial_id"))
@@ -1167,6 +1165,7 @@ class StateStore(AbstractContextManager["StateStore"]):
                     reason,
                 ),
             )
+        self._pause_barrier()
 
     def _dispatch(self, p: Object, who: Principal) -> Object:
         call = self._one("model_calls", text(p, "call_id"))

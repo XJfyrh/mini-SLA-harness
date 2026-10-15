@@ -345,6 +345,102 @@ class ProtocolTests(unittest.TestCase):
                 self.assertEqual(row(snapshot, "assignments", "assignment-1")["skipped"], 3)
                 self.assertEqual(row(snapshot, "epochs")["state"], "CLOSED")
 
+    def test_search_evaluation_exhaustion_releases_assignment_and_epoch(self) -> None:
+        for failure in ("reported", "lease"):
+            for draining in (False, True):
+                with (
+                    self.subTest(failure=failure, draining=draining),
+                    OfflineRun(self.root / f"{failure}-{draining}") as run,
+                ):
+                    run.initialize()
+                    run.accept_plan(max_trials=1)
+                    job = run.candidate(run.trial())
+                    for number in range(3):
+                        attempt = run.claim("ClaimEvaluation", "evaluation_id", job)
+                        if number == 2 and draining:
+                            run.command("Stop")
+                        if failure == "reported":
+                            run.command(
+                                "RecordEvaluation",
+                                {"verdict": "INFRA_ERROR"},
+                                run.principal(attempt, Role.EVALUATOR),
+                            )
+                        else:
+                            run.now += 1000000000
+                    if failure == "lease":
+                        with self.assertRaises(ProtocolError) as exhausted:
+                            run.claim("ClaimEvaluation", "evaluation_id", job)
+                        self.assertEqual(exhausted.exception.code, "RETRY_EXHAUSTED")
+                    immediate = run.store.snapshot()
+                    self.assertEqual(row(immediate, "assignments")["state"], "DONE")
+                    self.assertEqual(row(immediate, "epochs")["state"], "CLOSED")
+                    self.assertEqual(
+                        row(immediate, "runs")["status"], "COMPLETED" if draining else "RUNNING"
+                    )
+                    run.reopen()
+                    snapshot = run.store.snapshot()
+                    self.assertEqual(row(snapshot, "evaluations", job)["state"], "FAILED")
+                    self.assertEqual(row(snapshot, "trials")["state"], "FAILED")
+                    self.assertEqual(row(snapshot, "assignments")["state"], "DONE")
+                    self.assertEqual(row(snapshot, "epochs")["state"], "CLOSED")
+                    self.assertEqual(
+                        row(snapshot, "runs")["status"], "COMPLETED" if draining else "RUNNING"
+                    )
+                    if not draining:
+                        version = row(snapshot, "runs")["evidence_version"]
+                        context = run.artifacts.put(
+                            {"task_spec_hash": run.task.digest, "snapshot_version": version}
+                        )
+                        run.command(
+                            "OpenEpoch",
+                            {
+                                "epoch_id": "next-epoch",
+                                "epoch_no": 2,
+                                "artifact_hash": context,
+                                "budget_limit": 2000,
+                                "expected_version": version,
+                            },
+                        )
+                        run.reopen()
+                        self.assertEqual(
+                            row(run.store.snapshot(), "epochs", "next-epoch")["state"], "PLANNING"
+                        )
+
+    def test_search_failure_preserves_remaining_assignment_trials(self) -> None:
+        with OfflineRun(self.root / "remaining") as run:
+            run.initialize()
+            run.accept_plan(max_trials=2)
+            job = run.candidate(run.trial())
+            for _ in range(3):
+                run.evaluate(job, None, "INFRA_ERROR")
+            run.reopen()
+            snapshot = run.store.snapshot()
+            self.assertEqual(row(snapshot, "trials")["state"], "FAILED")
+            self.assertEqual(row(snapshot, "assignments")["state"], "RUNNING")
+            self.assertEqual(row(snapshot, "epochs")["state"], "EXECUTING")
+            run.trial("remaining-trial")
+
+    def test_draining_trial_retry_exhaustion_completes_stop(self) -> None:
+        with OfflineRun(self.root / "worker-exhaustion") as run:
+            run.initialize()
+            run.accept_plan(max_trials=1)
+            run.trial()
+            run.command("Stop")
+            for _ in range(2):
+                run.reopen()
+                run.claim("ClaimTrial", "trial_id", "trial")
+            run.reopen()
+            with self.assertRaises(ProtocolError) as exhausted:
+                run.claim("ClaimTrial", "trial_id", "trial")
+            self.assertEqual(exhausted.exception.code, "RETRY_EXHAUSTED")
+            self.assertEqual(row(run.store.snapshot(), "runs")["status"], "COMPLETED")
+            run.reopen()
+            snapshot = run.store.snapshot()
+            self.assertEqual(row(snapshot, "trials")["state"], "FAILED")
+            self.assertEqual(row(snapshot, "assignments")["state"], "DONE")
+            self.assertEqual(row(snapshot, "epochs")["state"], "CLOSED")
+            self.assertEqual(row(snapshot, "runs")["status"], "COMPLETED")
+
     def test_unknown_cannot_be_released_and_usage_breach_is_not_truncated(self) -> None:
         with OfflineRun(self.root / "run", budget=100) as run:
             run.initialize()

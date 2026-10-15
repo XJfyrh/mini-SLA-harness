@@ -27,6 +27,8 @@ python scripts/dev.py check
 
 [test_protocol.py](../tests/test_protocol.py) 额外覆盖跨进程抢锁、六处直接终止进程、未提交事务回滚、错误角色/编辑范围、无效成绩、usage 冲突/超额、持久重试上限、计划原子回滚和未开始配额的跳过计数。离线场景禁止 socket 创建。既有 demo 测试继续保留。
 
+停止与耗尽回归还检查：已开始基线在 PAUSING/DRAIN 中经历设施异常或重开后继续重试；已开始 Trial 在停止前后重开仍可排空，而未开始 Trial 被撤销；SEARCH 通过显式设施错误或租约接管耗尽后立即关闭已耗尽配额的 Assignment/Epoch，有剩余配额时仍能创建下一 Trial；停止中的 Worker 重试耗尽立即完成屏障。断言同时检查命令返回时和数据库重开后的状态，不能依赖重开代替当前命令收尾。
+
 你可直接打开场景列出的 SQLite；例如 `unknown-scope-accounting/state.sqlite3` 的 runs 应为 confirmed=1150、held=0，逐调用明细在 model_calls/usage_ledger，scope 合计在 budget_scopes。正式 StateStore 与 `demo_records` 使用不同数据库；不要把 demo 结果当 M0 验收。
 
 ## 行为测试

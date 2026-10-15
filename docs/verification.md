@@ -57,3 +57,13 @@
 - [SQLite 3.54.0 Windows x64 DLL](https://www.sqlite.org/download.html)：归档名 `sqlite-dll-win-x64-3540000.zip`，SHA3-256 `f5fb500c73a3afd89976386bb8e4fdc8b5b65c052e187fb1ada1f5de034cd45b`。
 
 隔离解释器的 `python314._pth` 显式加入本仓库根目录与 src，供本地源码测试；这与干净 wheel 安装验收是两条独立路径。工作依据日志在 `artifacts/audit/m0.tsv`，最终所选检查的源码指纹、日志与退出码由本次 `artifacts/verification/` 报告记录。
+
+## 固定环境与 M0 独立审查修复
+
+2026-10-15，阶段分支 `XJfyrh/m0-delivery-foundation`：将上述手工环境改为 [可重复准备入口](development.md#尽早检查环境)，Windows 默认 M0 验收和目标 doctor 使用固定运行时。真实归档下载、首次准备、重复复用、文件漂移拒绝及 WAL 重开已通过，记录为 `artifacts/verification/runtime-slice-20261015T120818.747200Z-61742d96/summary.json`。首次整目录发布曾连续遇到 WinError 5，失败记录保留在 `runtime-slice-20261015T120639.623059Z-22c2a431/` 和 `runtime-reproduce-20261015T120747.789481Z-274efaab/`；当前以最后写入的完整清单标记就绪，中断目录保留并拒绝执行。
+
+一个未参与实现的代理独立审查固定提交 `631a04e`：现有 20 项协议测试通过，独立探针仍复现了已开始基线的停止屏障错误和 SEARCH 设施耗尽后 Assignment/Epoch 未终结。报告及原始数据库见 `artifacts/review/m0-631a04e.md` 和同目录探针；固定环境切片 `1fef2a5` 另经该代理检查归档哈希、真实版本与中断保留，没有发现已复现缺陷。
+
+实现者新增回归先复现失败，再分别修复停止排空和重试耗尽收尾。失败证据为 `artifacts/verification/drain-regression-before-20261015T121316.359101Z-27284785/`、`drain-trial-before-20261015T121335.405712Z-6052bd40/`、`exhaustion-regression-before-20261015T121527.467451Z-119abd0a/` 与 `worker-exhaustion-before-20261015T121556.402693Z-b970a6dd/`。修复后的 25 项协议测试在固定运行时通过，证据为 `artifacts/verification/exhaustion-regression-after-20261015T121628.301328Z-dcf68366/summary.json`。这些是各切片的历史结果；交付时仍按当前稳定源码运行完整 check 与 m0-check，并复核修复提交。GitHub CI 尚未执行。
+
+本阶段关键失败、方案调整、独立复核与交付记录集中在 `artifacts/audit/m0-delivery.tsv`，不覆盖早期失败，也不补造缺失输出。
